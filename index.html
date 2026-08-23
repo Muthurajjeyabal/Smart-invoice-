@@ -69,6 +69,10 @@ const { useState, useEffect, useCallback } = React;
     function App() {
       const [business, setBusiness] = useState(() => { try { return JSON.parse(localStorage.getItem('si_business')); } catch { return null; } });
       const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('si_admin') === '1');
+      const [staffUser, setStaffUser] = useState(() => { try { return JSON.parse(localStorage.getItem('si_staff')); } catch { return null; } });
+      const [staffList, setStaffList] = useState([]);
+      const [staffForm, setStaffForm] = useState({ name: '', login_code: '', pin: '' });
+      const [savingStaff, setSavingStaff] = useState(false);
       const [loginCode, setLoginCode] = useState('');
       const [loginPin, setLoginPin] = useState('');
       const [loginError, setLoginError] = useState('');
@@ -142,12 +146,45 @@ const { useState, useEffect, useCallback } = React;
             setLoginLoading(false);
             return;
           }
-          const { data, error } = await supabase.from('businesses').select('*').eq('login_code', loginCode.trim().toUpperCase()).eq('pin', loginPin.trim()).eq('is_active', true).maybeSingle();
+          const code = loginCode.trim().toUpperCase();
+          const pin = loginPin.trim();
+          // Owner business login
+          const { data, error } = await supabase.from('businesses').select('*').eq('login_code', code).eq('pin', pin).eq('is_active', true).maybeSingle();
           if (error) throw error;
-          if (!data) { setLoginError('Invalid Username or PIN'); setLoginLoading(false); return; }
-          localStorage.setItem('si_business', JSON.stringify(data));
+          if (data) {
+            localStorage.setItem('si_business', JSON.stringify(data));
+            localStorage.removeItem('si_admin');
+            localStorage.removeItem('si_staff');
+            setBusiness(data);
+            setStaffUser(null);
+            setIsAdmin(false);
+            setLoginLoading(false);
+            return;
+          }
+          // Staff login — localStorage registry (synced per owner device) + optional staff_users table
+          let staffHit = null;
+          try {
+            const { data: st } = await supabase.from('staff_users').select('*').eq('login_code', code).eq('pin', pin).eq('is_active', true).maybeSingle();
+            if (st) staffHit = st;
+          } catch (e) {}
+          if (!staffHit) {
+            const allKeys = Object.keys(localStorage).filter(k => k.startsWith('si_stafflist_'));
+            for (const k of allKeys) {
+              try {
+                const list = JSON.parse(localStorage.getItem(k) || '[]');
+                const found = list.find(s => s.login_code === code && s.pin === pin && s.is_active !== false);
+                if (found) { staffHit = found; break; }
+              } catch (e) {}
+            }
+          }
+          if (!staffHit) { setLoginError('Invalid Username or PIN'); setLoginLoading(false); return; }
+          const { data: biz, error: bErr } = await supabase.from('businesses').select('*').eq('id', staffHit.business_id).maybeSingle();
+          if (bErr || !biz) { setLoginError('Staff business not found'); setLoginLoading(false); return; }
+          localStorage.setItem('si_business', JSON.stringify(biz));
+          localStorage.setItem('si_staff', JSON.stringify(staffHit));
           localStorage.removeItem('si_admin');
-          setBusiness(data);
+          setBusiness(biz);
+          setStaffUser(staffHit);
           setIsAdmin(false);
         } catch (err) {
           setLoginError(err.message || 'Login failed');
@@ -160,8 +197,10 @@ const { useState, useEffect, useCallback } = React;
         localStorage.removeItem('si_business');
         localStorage.removeItem('si_admin');
         setBusiness(null);
+        setStaffUser(null);
         setIsAdmin(false);
         setShowAdmin(false);
+        localStorage.removeItem('si_staff');
         setCustomers([]); setProducts([]); setInvoices([]);
         setScreen('dashboard');
         setLoginCode(''); setLoginPin('');
@@ -302,6 +341,71 @@ const { useState, useEffect, useCallback } = React;
           } catch (e) {}
         }
       };
+
+
+      const loadStaffList = () => {
+        if (!business?.id) return;
+        try {
+          const raw = localStorage.getItem('si_stafflist_' + business.id);
+          setStaffList(raw ? JSON.parse(raw) : []);
+        } catch { setStaffList([]); }
+      };
+
+      const saveStaffList = (list) => {
+        setStaffList(list);
+        if (business?.id) localStorage.setItem('si_stafflist_' + business.id, JSON.stringify(list));
+      };
+
+      const addStaffMember = async () => {
+        if (staffUser) { alert('Only owner can add staff'); return; }
+        if (!staffForm.name || !staffForm.login_code || !staffForm.pin) {
+          alert('Name, username and PIN required'); return;
+        }
+        if (staffForm.pin.length < 4) { alert('PIN min 4 digits'); return; }
+        const code = staffForm.login_code.trim().toUpperCase();
+        setSavingStaff(true);
+        try {
+          // ensure username not taken by business
+          const { data: exists } = await supabase.from('businesses').select('id').eq('login_code', code).maybeSingle();
+          if (exists) { alert('Username already used by a business'); setSavingStaff(false); return; }
+          const member = {
+            id: 'stf_' + Date.now(),
+            business_id: business.id,
+            name: staffForm.name.trim(),
+            login_code: code,
+            pin: staffForm.pin.trim(),
+            role: 'staff',
+            is_active: true,
+            created_at: new Date().toISOString()
+          };
+          try {
+            await supabase.from('staff_users').insert({
+              business_id: business.id,
+              name: member.name,
+              login_code: member.login_code,
+              pin: member.pin,
+              role: 'staff',
+              is_active: true
+            });
+          } catch (e) {}
+          saveStaffList([member, ...staffList]);
+          setStaffForm({ name: '', login_code: '', pin: '' });
+          alert('Staff created!\\nUsername: ' + code + '\\nPIN: ' + member.pin);
+        } finally {
+          setSavingStaff(false);
+        }
+      };
+
+      const removeStaffMember = (id) => {
+        if (!confirm('Remove this staff login?')) return;
+        const item = staffList.find(s => s.id === id);
+        saveStaffList(staffList.filter(s => s.id !== id));
+        try {
+          if (item) supabase.from('staff_users').delete().eq('login_code', item.login_code);
+        } catch (e) {}
+      };
+
+      const isOwner = !staffUser;
 
       const startNewInvoice = () => { setSelectedCustomer(null); setItems([]); setDiscount(0); setIsInterstate(false); setLastInvoice(null); setScreen('create'); };
 
@@ -1996,6 +2100,60 @@ const { useState, useEffect, useCallback } = React;
         </div>
       );
 
+
+      const StaffManager = () => {
+        useEffect(() => { loadStaffList(); }, [business?.id]);
+        if (staffUser) {
+          return (
+            <div className="pb-24 min-h-screen p-6 text-center">
+              <p className="text-slate-500 mt-20">Staff cannot manage other staff.</p>
+              <button onClick={() => setScreen('more')} className="mt-4 text-brand-600 font-semibold">Back</button>
+            </div>
+          );
+        }
+        return (
+          <div className="pb-24 min-h-screen bg-slate-50">
+            <div className="bg-white px-4 pt-12 pb-4 sticky top-0 z-10 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <button onClick={() => setScreen('more')} className="p-1 -ml-1"><IconBack /></button>
+                <h1 className="text-lg font-bold">Staff Login</h1>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">Cashiers can create invoices & POS — not change settings</p>
+            </div>
+            <div className="p-4 space-y-3">
+              <div className="bg-white rounded-2xl p-4 shadow-card space-y-3">
+                <p className="text-xs font-semibold text-slate-500 uppercase">Add staff</p>
+                <input placeholder="Staff name" value={staffForm.name} onChange={e => setStaffForm({...staffForm, name: e.target.value})}
+                  className="w-full px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none" />
+                <input placeholder="Username (e.g. CASHIER1)" value={staffForm.login_code}
+                  onChange={e => setStaffForm({...staffForm, login_code: e.target.value.toUpperCase()})}
+                  className="w-full px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none tracking-wide" />
+                <input placeholder="PIN (4+ digits)" type="password" inputMode="numeric" value={staffForm.pin}
+                  onChange={e => setStaffForm({...staffForm, pin: e.target.value})}
+                  className="w-full px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none" />
+                <button onClick={addStaffMember} disabled={savingStaff}
+                  className="w-full bg-brand-600 text-white font-semibold py-3 rounded-xl text-sm disabled:opacity-60">
+                  {savingStaff ? 'Saving...' : 'Create Staff Login'}
+                </button>
+              </div>
+              {staffList.length === 0 && <p className="text-center text-sm text-slate-400 py-6">No staff yet</p>}
+              {staffList.map(s => (
+                <div key={s.id} className="bg-white rounded-2xl p-4 shadow-card flex justify-between items-center">
+                  <div>
+                    <p className="font-semibold text-slate-900">{s.name}</p>
+                    <p className="text-xs text-slate-400">Username: {s.login_code} · PIN: {s.pin}</p>
+                  </div>
+                  <button onClick={() => removeStaffMember(s.id)} className="text-xs text-rose-500 font-semibold">Remove</button>
+                </div>
+              ))}
+              <div className="bg-amber-50 rounded-2xl p-3 text-xs text-amber-800">
+                Staff login works on this phone immediately. For other phones, run staff SQL in Supabase (optional) or add the same staff again on that device.
+              </div>
+            </div>
+          </div>
+        );
+      };
+
       const More = () => (
         <div className="pb-24 min-h-screen">
           <div className="bg-white px-5 pt-12 pb-6"><h1 className="text-xl font-bold">More</h1></div>
@@ -2003,8 +2161,11 @@ const { useState, useEffect, useCallback } = React;
             <div className="bg-white rounded-2xl p-4 shadow-card">
               <p className="text-sm text-slate-500">Business</p>
               <p className="font-semibold text-slate-900 mt-0.5">{business?.name}</p>
-              <p className="text-xs text-slate-400 mt-1">Username: {business?.login_code}</p>
+              <p className="text-xs text-slate-400 mt-1">Username: {staffUser ? staffUser.login_code : business?.login_code}</p>
+              {staffUser && <p className="text-xs font-semibold text-amber-700 mt-1">Staff · {staffUser.name}</p>}
+              {!staffUser && <p className="text-xs font-semibold text-emerald-700 mt-1">Owner</p>}
             </div>
+            {!staffUser && (
             <button onClick={openProfile} className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
               <div className="flex-1">
                 <p className="font-semibold text-slate-900">Business Profile</p>
@@ -2012,6 +2173,7 @@ const { useState, useEffect, useCallback } = React;
               </div>
               <IconChevron />
             </button>
+            )}
             <button onClick={() => setScreen('templates')} className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
               <div className="flex-1">
                 <p className="font-semibold text-slate-900">Invoice Templates</p>
@@ -2026,6 +2188,16 @@ const { useState, useEffect, useCallback } = React;
               </div>
               <IconChevron />
             </button>
+            {!staffUser && (
+              <button onClick={() => setScreen('staff')} className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
+                <div className="flex-1">
+                  <p className="font-semibold text-slate-900">Staff Login</p>
+                  <p className="text-sm text-slate-500">Add cashier accounts</p>
+                </div>
+                <IconChevron />
+              </button>
+            )}
+            {!staffUser && (
             <button onClick={() => setScreen('settings')} className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
               <div className="flex-1">
                 <p className="font-semibold text-slate-900">Settings</p>
@@ -2033,6 +2205,7 @@ const { useState, useEffect, useCallback } = React;
               </div>
               <IconChevron />
             </button>
+            )}
             <button onClick={() => setScreen('reports')} className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
               <div className="flex-1">
                 <p className="font-semibold text-slate-900">Reports</p>
@@ -2090,6 +2263,7 @@ const { useState, useEffect, useCallback } = React;
           {screen === 'templates' && <Templates />}
           {screen === 'recurring' && <Recurring />}
           {screen === 'settings' && <Settings />}
+          {screen === 'staff' && <StaffManager />}
           {['dashboard', 'customers', 'products', 'more'].includes(screen) && <BottomNav />}
           {showAddProduct && <AddProductModal />}
           {showAddCustomer && <AddCustomerModal />}
