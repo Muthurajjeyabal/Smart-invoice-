@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#d97706" />
+  <meta name="theme-color" content="#4f46e5" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Smart Receipt" />
+  <meta name="apple-mobile-web-app-title" content="Smart Invoice" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icon-192.png" />
-  <title>Smart Receipt</title>
+  <title>Smart Invoice</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -20,9 +20,9 @@
         extend: {
           colors: {
             brand: {
-              50: '#fffbeb', 100: '#fef3c7', 200: '#fde68a', 300: '#fcd34d',
-              400: '#fbbf24', 500: '#f59e0b', 600: '#d97706', 700: '#b45309',
-              800: '#92400e', 900: '#78350f',
+              50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc',
+              400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca',
+              800: '#3730a3', 900: '#312e81',
             }
           },
           fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'] },
@@ -50,10 +50,10 @@
     .dark .border-slate-200 { border-color: #334155 !important; }
     .dark .border-slate-50 { border-color: #1e293b !important; }
     .dark .shadow-card, .dark .shadow-soft { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
-    .dark .bg-brand-50 { background-color: rgba(217,119,6,0.15) !important; }
-    .dark .bg-brand-100 { background-color: rgba(217,119,6,0.2) !important; }
-    .dark .text-brand-700 { color: #fcd34d !important; }
-    .dark .text-brand-600 { color: #fbbf24 !important; }
+    .dark .bg-brand-50 { background-color: rgba(79,70,229,0.15) !important; }
+    .dark .bg-brand-100 { background-color: rgba(79,70,229,0.2) !important; }
+    .dark .text-brand-700 { color: #a5b4fc !important; }
+    .dark .text-brand-600 { color: #818cf8 !important; }
     .dark .bg-emerald-50 { background-color: rgba(16,185,129,0.15) !important; }
     .dark .text-emerald-700, .dark .text-emerald-600, .dark .text-emerald-800 { color: #34d399 !important; }
     .dark .bg-amber-50 { background-color: rgba(245,158,11,0.15) !important; }
@@ -80,7 +80,7 @@
 <body class="bg-slate-50">
   <script>
     (function() {
-      var t = localStorage.getItem('sr_theme');
+      var t = localStorage.getItem('si_theme');
       var dark = t === 'dark' || (t !== 'light' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
       if (dark) document.documentElement.classList.add('dark');
     })();
@@ -90,7 +90,7 @@
 
     window.onerror = function(msg, url, line) {
       var el = document.getElementById('root');
-      if (el) el.innerHTML = '<div style="padding:24px;font-family:sans-serif"><h2 style="color:#b91c1c">Error</h2><pre style="white-space:pre-wrap;font-size:12px">' + String(msg) + '\nLine: ' + line + '</pre><p style="color:#666;font-size:13px">Clear site data and try again. Or re-login.</p><button onclick="localStorage.clear();location.reload()" style="padding:12px 20px;background:#d97706;color:#fff;border:none;border-radius:12px;font-weight:600">Clear & Reload</button></div>';
+      if (el) el.innerHTML = '<div style="padding:24px;font-family:sans-serif"><h2 style="color:#b91c1c">Error</h2><pre style="white-space:pre-wrap;font-size:12px">' + String(msg) + '\nLine: ' + line + '</pre><p style="color:#666;font-size:13px">Clear site data and try again. Or re-login.</p><button onclick="localStorage.clear();location.reload()" style="padding:12px 20px;background:#4f46e5;color:#fff;border:none;border-radius:12px;font-weight:600">Clear & Reload</button></div>';
       return false;
     };
 const { useState, useEffect, useCallback } = React;
@@ -113,22 +113,22 @@ const { useState, useEffect, useCallback } = React;
 
     function App() {
       const [darkMode, setDarkMode] = useState(() => {
-        const saved = localStorage.getItem('sr_theme');
+        const saved = localStorage.getItem('si_theme');
         if (saved === 'dark') return true;
         if (saved === 'light') return false;
         return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
       });
       useEffect(() => {
         document.documentElement.classList.toggle('dark', darkMode);
-        localStorage.setItem('sr_theme', darkMode ? 'dark' : 'light');
+        localStorage.setItem('si_theme', darkMode ? 'dark' : 'light');
         const meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute('content', darkMode ? '#0f172a' : '#d97706');
+        if (meta) meta.setAttribute('content', darkMode ? '#0f172a' : '#4f46e5');
       }, [darkMode]);
       const toggleDarkMode = () => setDarkMode(d => !d);
 
-      const [business, setBusiness] = useState(() => { try { return JSON.parse(localStorage.getItem('sr_business')); } catch { return null; } });
-      const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('sr_admin') === '1');
-      const [staffUser, setStaffUser] = useState(() => { try { return JSON.parse(localStorage.getItem('sr_staff')); } catch { return null; } });
+      const [business, setBusiness] = useState(() => { try { return JSON.parse(localStorage.getItem('si_business')); } catch { return null; } });
+      const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('si_admin') === '1');
+      const [staffUser, setStaffUser] = useState(() => { try { return JSON.parse(localStorage.getItem('si_staff')); } catch { return null; } });
       const [staffList, setStaffList] = useState([]);
       const [staffForm, setStaffForm] = useState({ name: '', login_code: '', pin: '' });
       const [savingStaff, setSavingStaff] = useState(false);
@@ -160,7 +160,7 @@ const { useState, useEffect, useCallback } = React;
       const [showAddCustomer, setShowAddCustomer] = useState(false);
       const [selectedCustomerDetail, setSelectedCustomerDetail] = useState(null);
       const [recurringList, setRecurringList] = useState(() => {
-        try { return JSON.parse(localStorage.getItem('sr_recurring_' + (JSON.parse(localStorage.getItem('sr_business')||'null')||{}).id) || '[]'); } catch { return []; }
+        try { return JSON.parse(localStorage.getItem('si_recurring_' + (JSON.parse(localStorage.getItem('si_business')||'null')||{}).id) || '[]'); } catch { return []; }
       });
       const [recForm, setRecForm] = useState({ customer_id: '', amount: '', note: '', frequency: 'monthly', day: '1' });
       const [savingProduct, setSavingProduct] = useState(false);
@@ -169,11 +169,11 @@ const { useState, useEffect, useCallback } = React;
       const [newCustomer, setNewCustomer] = useState({ name: '', mobile: '', email: '', gstin: '', billing_address: '' });
       const [profileForm, setProfileForm] = useState(null);
       const [savingProfile, setSavingProfile] = useState(false);
-      const [invoiceTemplate, setInvoiceTemplate] = useState(() => localStorage.getItem('sr_template') || 'classic');
-      const [invPrefix, setInvPrefix] = useState(() => localStorage.getItem('sr_prefix') || 'REC');
-      const [overdueDays, setOverdueDays] = useState(() => Number(localStorage.getItem('sr_theme_days') || 7));
+      const [invoiceTemplate, setInvoiceTemplate] = useState(() => localStorage.getItem('si_template') || 'classic');
+      const [invPrefix, setInvPrefix] = useState(() => localStorage.getItem('si_prefix') || 'INV');
+      const [overdueDays, setOverdueDays] = useState(() => Number(localStorage.getItem('si_overdue_days') || 7));
       const templates = [
-        { id: 'classic', name: 'Classic', color: '#d97706', desc: 'Header top · amounts right' },
+        { id: 'classic', name: 'Classic', color: '#4f46e5', desc: 'Header top · amounts right' },
         { id: 'sidebar', name: 'Sidebar', color: '#0f172a', desc: 'Left strip · content right' },
         { id: 'card', name: 'Card', color: '#047857', desc: 'Centered card · soft frame' },
         { id: 'table', name: 'GST Table', color: '#1e3a5f', desc: 'Full tax table layout' },
@@ -181,7 +181,7 @@ const { useState, useEffect, useCallback } = React;
       ];
       const templateColor = (templates.find(t => t.id === invoiceTemplate) || templates[0]).color;
       const templateMeta = templates.find(t => t.id === invoiceTemplate) || templates[0];
-      const setTemplate = (id) => { setInvoiceTemplate(id); localStorage.setItem('sr_template', id); };
+      const setTemplate = (id) => { setInvoiceTemplate(id); localStorage.setItem('si_template', id); };
 
       const subtotal = items.reduce((s, i) => s + (i.price * i.qty), 0);
       const taxable = Math.max(0, subtotal - discount);
@@ -199,7 +199,7 @@ const { useState, useEffect, useCallback } = React;
         setLoginLoading(true);
         try {
           if (loginCode.toUpperCase() === 'ADMIN' && loginPin === MASTER_PIN) {
-            localStorage.setItem('sr_admin', '1');
+            localStorage.setItem('si_admin', '1');
             setIsAdmin(true);
             setShowAdmin(true);
             setLoginLoading(false);
@@ -211,9 +211,9 @@ const { useState, useEffect, useCallback } = React;
           const { data, error } = await supabase.from('businesses').select('*').eq('login_code', code).eq('pin', pin).eq('is_active', true).maybeSingle();
           if (error) throw error;
           if (data) {
-            localStorage.setItem('sr_business', JSON.stringify(data));
-            localStorage.removeItem('sr_admin');
-            localStorage.removeItem('sr_staff');
+            localStorage.setItem('si_business', JSON.stringify(data));
+            localStorage.removeItem('si_admin');
+            localStorage.removeItem('si_staff');
             setBusiness(data);
             setStaffUser(null);
             setIsAdmin(false);
@@ -227,7 +227,7 @@ const { useState, useEffect, useCallback } = React;
             if (st) staffHit = st;
           } catch (e) {}
           if (!staffHit) {
-            const allKeys = Object.keys(localStorage).filter(k => k.startsWith('sr_stafflist_'));
+            const allKeys = Object.keys(localStorage).filter(k => k.startsWith('si_stafflist_'));
             for (const k of allKeys) {
               try {
                 const list = JSON.parse(localStorage.getItem(k) || '[]');
@@ -239,9 +239,9 @@ const { useState, useEffect, useCallback } = React;
           if (!staffHit) { setLoginError('Invalid Username or PIN'); setLoginLoading(false); return; }
           const { data: biz, error: bErr } = await supabase.from('businesses').select('*').eq('id', staffHit.business_id).maybeSingle();
           if (bErr || !biz) { setLoginError('Staff business not found'); setLoginLoading(false); return; }
-          localStorage.setItem('sr_business', JSON.stringify(biz));
-          localStorage.setItem('sr_staff', JSON.stringify(staffHit));
-          localStorage.removeItem('sr_admin');
+          localStorage.setItem('si_business', JSON.stringify(biz));
+          localStorage.setItem('si_staff', JSON.stringify(staffHit));
+          localStorage.removeItem('si_admin');
           setBusiness(biz);
           setStaffUser(staffHit);
           setIsAdmin(false);
@@ -253,13 +253,13 @@ const { useState, useEffect, useCallback } = React;
       };
 
       const handleLogout = () => {
-        localStorage.removeItem('sr_business');
-        localStorage.removeItem('sr_admin');
+        localStorage.removeItem('si_business');
+        localStorage.removeItem('si_admin');
         setBusiness(null);
         setStaffUser(null);
         setIsAdmin(false);
         setShowAdmin(false);
-        localStorage.removeItem('sr_staff');
+        localStorage.removeItem('si_staff');
         setCustomers([]); setProducts([]); setInvoices([]);
         setScreen('dashboard');
         setLoginCode(''); setLoginPin('');
@@ -293,22 +293,14 @@ const { useState, useEffect, useCallback } = React;
           const [custRes, prodRes, invRes] = await Promise.all([
             supabase.from('customers').select('*').eq('business_id', business.id).order('name'),
             supabase.from('products').select('*').eq('business_id', business.id).order('name'),
-            supabase.from('receipts').select('*').eq('business_id', business.id).order('created_at', { ascending: false }).limit(50)
+            supabase.from('invoices').select('*').eq('business_id', business.id).order('created_at', { ascending: false }).limit(50)
           ]);
           if (custRes.error) console.warn(custRes.error);
           if (prodRes.error) console.warn(prodRes.error);
           if (invRes.error) console.warn(invRes.error);
           setCustomers(custRes.data || []);
           setProducts(prodRes.data || []);
-          const mapped = (invRes.data || []).map(r => ({
-            ...r,
-            invoice_number: r.receipt_number || r.invoice_number,
-            invoice_date: r.receipt_date || r.invoice_date,
-            status: 'paid',
-            cgst: 0, sgst: 0, igst: r.tax || 0,
-            amount_paid: r.total, balance: 0
-          }));
-          setInvoices(mapped);
+          setInvoices(invRes.data || []);
           if (custRes.error && prodRes.error && invRes.error) {
             throw new Error((custRes.error || prodRes.error || invRes.error).message || 'Tables missing. Run PIN schema in Supabase SQL Editor.');
           }
@@ -323,13 +315,13 @@ const { useState, useEffect, useCallback } = React;
       useEffect(() => {
         if (!business?.id) return;
         try {
-          const raw = localStorage.getItem('sr_recurring_' + business.id);
+          const raw = localStorage.getItem('si_recurring_' + business.id);
           setRecurringList(raw ? JSON.parse(raw) : []);
         } catch { setRecurringList([]); }
       }, [business?.id]);
       const saveRecurringList = (list) => {
         setRecurringList(list);
-        if (business?.id) localStorage.setItem('sr_recurring_' + business.id, JSON.stringify(list));
+        if (business?.id) localStorage.setItem('si_recurring_' + business.id, JSON.stringify(list));
       };
 
       useEffect(() => {
@@ -337,7 +329,7 @@ const { useState, useEffect, useCallback } = React;
         const el = document.getElementById('preview-barcode');
         if (!el || typeof JsBarcode === 'undefined') return;
         try {
-          JsBarcode(el, String(lastInvoice.invoice_number || 'REC'), {
+          JsBarcode(el, String(lastInvoice.invoice_number || 'INV'), {
             format: 'CODE128', width: 1.6, height: 48, displayValue: true, fontSize: 12, margin: 8, background: '#ffffff'
           });
         } catch (e) {}
@@ -345,7 +337,7 @@ const { useState, useEffect, useCallback } = React;
 
 
       const nextInvoiceNumber = () => {
-        const prefix = invPrefix || 'REC';
+        const prefix = invPrefix || 'INV';
         const nums = invoices
           .map(i => {
             const m = String(i.invoice_number || '').match(/(\d+)$/);
@@ -413,14 +405,14 @@ const { useState, useEffect, useCallback } = React;
       const loadStaffList = () => {
         if (!business?.id) return;
         try {
-          const raw = localStorage.getItem('sr_stafflist_' + business.id);
+          const raw = localStorage.getItem('si_stafflist_' + business.id);
           setStaffList(raw ? JSON.parse(raw) : []);
         } catch { setStaffList([]); }
       };
 
       const saveStaffList = (list) => {
         setStaffList(list);
-        if (business?.id) localStorage.setItem('sr_stafflist_' + business.id, JSON.stringify(list));
+        if (business?.id) localStorage.setItem('si_stafflist_' + business.id, JSON.stringify(list));
       };
 
       const addStaffMember = async () => {
@@ -492,33 +484,23 @@ const { useState, useEffect, useCallback } = React;
         if (!selectedCustomer || items.length === 0 || !business) return;
         setSaving(true);
         try {
-          const receiptNumber = nextInvoiceNumber();
+          const invoiceNumber = nextInvoiceNumber();
           const invData = {
-            business_id: business.id,
-            receipt_number: receiptNumber,
-            customer_id: selectedCustomer.id,
-            customer_name: selectedCustomer.name,
-            customer_mobile: selectedCustomer.mobile,
-            receipt_date: new Date().toISOString().split('T')[0],
-            payment_mode: 'cash',
-            subtotal, discount,
-            tax: taxTotal,
-            total,
-            notes: null
+            business_id: business.id, invoice_number: invoiceNumber,
+            customer_id: selectedCustomer.id, customer_name: selectedCustomer.name,
+            customer_mobile: selectedCustomer.mobile, customer_gstin: selectedCustomer.gstin,
+            invoice_date: new Date().toISOString().split('T')[0],
+            subtotal, discount, taxable_amount: taxable, cgst, sgst, igst,
+            total, amount_paid: 0, balance: total, status: 'pending'
           };
-          const { data: inv, error: invErr } = await supabase.from('receipts').insert(invData).select().single();
+          const { data: inv, error: invErr } = await supabase.from('invoices').insert(invData).select().single();
           if (invErr) throw invErr;
           const itemsData = items.map(i => ({
-            business_id: business.id, receipt_id: inv.id, product_id: i.product_id, product_name: i.name,
-            quantity: i.qty, unit_price: i.price, amount: i.price * i.qty
+            business_id: business.id, invoice_id: inv.id, product_id: i.product_id, product_name: i.name,
+            hsn_sac: i.hsn, quantity: i.qty, unit_price: i.price, gst_percent: i.gst, amount: i.price * i.qty
           }));
-          const { error: itemsErr } = await supabase.from('receipt_items').insert(itemsData);
+          const { error: itemsErr } = await supabase.from('invoice_items').insert(itemsData);
           if (itemsErr) throw itemsErr;
-          // map for preview compatibility
-          inv.invoice_number = inv.receipt_number;
-          inv.invoice_date = inv.receipt_date;
-          inv.status = 'paid';
-          inv.cgst = 0; inv.sgst = 0; inv.igst = inv.tax || 0;
           setLastInvoice(inv);
           await loadData();
           setScreen('preview');
@@ -586,10 +568,10 @@ const { useState, useEffect, useCallback } = React;
             <div className="flex-1 flex flex-col justify-center px-6 py-12">
               <div className="text-center mb-8">
                 <div className="w-16 h-16 bg-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-brand-600/30">
-                  <span className="text-white text-2xl font-bold">SR</span>
+                  <span className="text-white text-2xl font-bold">SI</span>
                 </div>
-                <h1 className="text-2xl font-bold text-slate-900">Smart Receipt</h1>
-                <p className="text-slate-500 text-sm mt-1">Paid. Receipt. Share.</p>
+                <h1 className="text-2xl font-bold text-slate-900">Smart Invoice</h1>
+                <p className="text-slate-500 text-sm mt-1">Create. Send. Get Paid.</p>
               </div>
               <div className="bg-white rounded-2xl shadow-card p-6">
                 <form onSubmit={handleLogin} className="space-y-4">
@@ -829,7 +811,7 @@ const { useState, useEffect, useCallback } = React;
         if (!inv) return;
         const phone = (inv.customer_mobile || '').replace(/\D/g, '');
         const amt = Number(inv.balance || inv.total || 0).toLocaleString('en-IN');
-        const biz = business?.name || 'Smart Receipt';
+        const biz = business?.name || 'Smart Invoice';
         const upi = business?.upi_id ? '\n💳 Pay UPI: ' + business.upi_id : '';
         const msg = 'Hello ' + (inv.customer_name || 'Customer') + ' 👋\n\nFriendly reminder from *' + biz + '*.\n\nYour invoice *' + inv.invoice_number + '* of *₹' + amt + '* is still *pending*.\n\nPlease pay at the earliest.' + upi + '\n\nThank you!\n— ' + biz;
         const url = phone
@@ -901,7 +883,7 @@ const { useState, useEffect, useCallback } = React;
         const phone = (inv.customer_mobile || '').replace(/\D/g, '');
         const amt = Number(inv.total || 0).toLocaleString('en-IN');
         const st = (inv.status || 'pending').toUpperCase();
-        const biz = business?.name || 'Smart Receipt';
+        const biz = business?.name || 'Smart Invoice';
         const upi = business?.upi_id ? '\n💳 Pay UPI: ' + business.upi_id + '\n🔗 Open UPI app to pay ₹' + amt : '';
         const msg = 'Hello ' + (inv.customer_name || 'Customer') + ' 👋\n\nYour invoice *' + inv.invoice_number + '* from *' + biz + '* is ready.\n\n💰 Amount: ₹' + amt + '\n📋 Status: ' + st + upi + '\n\nThank you for your business!\n— ' + biz;
         const url = phone
@@ -942,7 +924,7 @@ const { useState, useEffect, useCallback } = React;
         const color = templateColor;
         const layout = (templateMeta && templateMeta.id) || 'classic';
         const logo = business?.logo_url || '';
-        const invNo = String(inv.invoice_number || 'REC');
+        const invNo = String(inv.invoice_number || 'INV');
         const bName = business?.name || 'Invoice';
         const bAddr = business?.address || '';
         const bPhone = business?.phone || '';
@@ -981,7 +963,7 @@ const { useState, useEffect, useCallback } = React;
           body = '<div style="font-family:system-ui,sans-serif;background:#f1f5f9;padding:24px;min-height:100vh">'
             + '<div style="max-width:480px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.08)">'
             + '<div style="background:' + color + ';color:#fff;padding:24px;text-align:center">'
-            + '<p style="font-size:11px;opacity:0.8;letter-spacing:2px;margin:0">RECEIPT</p>'
+            + '<p style="font-size:11px;opacity:0.8;letter-spacing:2px;margin:0">INVOICE</p>'
             + '<p style="font-size:22px;font-weight:800;margin:8px 0 0">' + invNo + '</p>'
             + '<p style="font-size:13px;opacity:0.9;margin:4px 0 0">' + date + '</p></div>'
             + '<div style="padding:24px">'
@@ -1001,7 +983,7 @@ const { useState, useEffect, useCallback } = React;
             + '<table style="width:100%;margin-bottom:16px"><tr>'
             + '<td><h1 style="margin:0;font-size:20px;color:' + color + '">' + bName + '</h1>'
             + '<p style="margin:4px 0;font-size:11px;color:#666">' + bAddr + '<br>' + bPhone + (bGst ? '<br>GSTIN: ' + bGst : '') + '</p></td>'
-            + '<td style="text-align:right;vertical-align:top"><p style="margin:0;font-size:18px;font-weight:800">RECEIPT</p>'
+            + '<td style="text-align:right;vertical-align:top"><p style="margin:0;font-size:18px;font-weight:800">TAX INVOICE</p>'
             + '<p style="margin:4px 0;font-size:13px"><b>' + invNo + '</b> · ' + date + '</p>'
             + '<span style="background:' + color + ';color:#fff;padding:2px 8px;border-radius:4px;font-size:10px">' + status + '</span></td></tr></table>'
             + '<div style="background:#f8fafc;border:1px solid #e2e8f0;padding:12px 16px;margin-bottom:16px;border-radius:6px">'
@@ -1036,7 +1018,7 @@ const { useState, useEffect, useCallback } = React;
           /* classic */
           body = '<div style="font-family:system-ui,sans-serif;padding:0;max-width:640px;margin:0 auto">'
             + '<div style="background:' + color + ';color:#fff;padding:24px 28px;display:flex;justify-content:space-between;align-items:flex-start">'
-            + '<div><p style="margin:0;font-size:11px;opacity:0.8;letter-spacing:1px">RECEIPT</p>'
+            + '<div><p style="margin:0;font-size:11px;opacity:0.8;letter-spacing:1px">INVOICE</p>'
             + '<p style="margin:6px 0 0;font-size:22px;font-weight:800">' + invNo + '</p></div>'
             + '<div style="text-align:right"><p style="margin:0;font-weight:700;font-size:16px">' + bName + '</p>'
             + '<p style="margin:4px 0 0;font-size:11px;opacity:0.85">' + bPhone + (bGst ? '<br>' + bGst : '') + '</p></div></div>'
@@ -1127,24 +1109,24 @@ const { useState, useEffect, useCallback } = React;
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-slate-500 text-sm font-medium">{greeting} 👋</p>
-                <h1 className="text-xl font-bold text-slate-900 mt-0.5">{business?.name || 'Smart Receipt'}</h1>
+                <h1 className="text-xl font-bold text-slate-900 mt-0.5">{business?.name || 'Smart Invoice'}</h1>
                 <p className="text-xs text-slate-400 mt-0.5">Here's your business overview</p>
               </div>
               {business?.logo_url ? (
                 <img src={business.logo_url} alt="" className="w-11 h-11 rounded-full object-cover border border-slate-100" />
               ) : (
                 <div className="w-11 h-11 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm">
-                  {(business?.name || 'SR').substring(0, 2).toUpperCase()}
+                  {(business?.name || 'SI').substring(0, 2).toUpperCase()}
                 </div>
               )}
             </div>
           </div>
           <div className="px-5 mt-2 mb-4">
             <button onClick={startNewInvoice} className="w-full bg-brand-600 text-white font-semibold py-3.5 rounded-2xl shadow-soft shadow-brand-600/25 flex items-center justify-center gap-2">
-              <IconPlus /> Create Receipt
+              <IconPlus /> Create Invoice
             </button>
             <button onClick={() => { setSelectedCustomer(null); setItems([]); setDiscount(0); setIsInterstate(false); setScreen('pos'); }} className="w-full mt-2.5 bg-white border border-slate-200 text-slate-800 font-semibold py-3 rounded-2xl flex items-center justify-center gap-2">
-              ⚡ Quick Receipt
+              ⚡ Quick POS
             </button>
           </div>
           <div className="px-5 grid grid-cols-2 gap-3 mb-4">
@@ -1190,7 +1172,7 @@ const { useState, useEffect, useCallback } = React;
           </div>
           <div className="px-5">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-semibold text-slate-900">Recent Receipts</h2>
+              <h2 className="font-semibold text-slate-900">Recent Invoices</h2>
               <button onClick={loadData} className="text-brand-600 text-sm font-medium flex items-center gap-1"><IconRefresh /> Refresh</button>
             </div>
             <div className="space-y-3">
@@ -1233,7 +1215,7 @@ const { useState, useEffect, useCallback } = React;
           <div className="bg-white px-4 pt-12 pb-4 sticky top-0 z-20 border-b border-slate-100">
             <div className="flex items-center gap-3">
               <button onClick={() => setScreen('dashboard')} className="p-1 -ml-1 text-slate-600"><IconBack /></button>
-              <h1 className="text-lg font-bold text-slate-900 flex-1">Create Receipt</h1>
+              <h1 className="text-lg font-bold text-slate-900 flex-1">Create Invoice</h1>
             </div>
           </div>
           <div className="px-4 pt-4 space-y-4">
@@ -1399,7 +1381,7 @@ const { useState, useEffect, useCallback } = React;
           <div className="bg-white px-4 pt-12 pb-4 sticky top-0 z-20 border-b border-slate-100">
             <div className="flex items-center gap-3">
               <button onClick={() => setScreen('dashboard')} className="p-1 -ml-1 text-slate-600"><IconBack /></button>
-              <h1 className="text-lg font-bold text-slate-900 flex-1">Receipt Ready 🎉</h1>
+              <h1 className="text-lg font-bold text-slate-900 flex-1">Invoice Ready 🎉</h1>
               <span className={'text-[10px] font-semibold px-2 py-1 rounded-full ' + (lastInvoice?.status === 'paid' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700')}>
                 {(lastInvoice?.status || 'pending').toUpperCase()}
               </span>
@@ -1412,7 +1394,7 @@ const { useState, useEffect, useCallback } = React;
                   <div className="flex gap-2 items-center">
                     {business?.logo_url && <img src={business.logo_url} alt="" className="w-12 h-12 rounded-lg object-contain bg-white/20 p-0.5" />}
                     <div>
-                      <p className="text-white/70 text-xs font-medium">RECEIPT</p>
+                      <p className="text-white/70 text-xs font-medium">INVOICE</p>
                       <p className="text-xl font-bold mt-0.5">{lastInvoice?.invoice_number}</p>
                     </div>
                   </div>
@@ -1486,7 +1468,7 @@ const { useState, useEffect, useCallback } = React;
               )}
               <div className="flex gap-2">
                 <button onClick={() => setScreen('dashboard')} className="flex-1 bg-white border border-slate-200 font-semibold py-3 rounded-2xl text-sm">Home</button>
-                <button onClick={startNewInvoice} className="flex-1 bg-white border border-slate-200 font-semibold py-3 rounded-2xl text-sm">New Receipt</button>
+                <button onClick={startNewInvoice} className="flex-1 bg-white border border-slate-200 font-semibold py-3 rounded-2xl text-sm">New Invoice</button>
               </div>
             </div>
           </div>
@@ -1625,7 +1607,7 @@ const { useState, useEffect, useCallback } = React;
           <div className="bg-white px-4 pt-12 pb-3 sticky top-0 z-20 border-b border-slate-100">
             <div className="flex items-center gap-3">
               <button onClick={() => setScreen('dashboard')} className="p-1 -ml-1 text-slate-600"><IconBack /></button>
-              <h1 className="text-lg font-bold text-slate-900 flex-1">Quick Receipt</h1>
+              <h1 className="text-lg font-bold text-slate-900 flex-1">Quick POS</h1>
               <span className="text-xs font-semibold bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg">LIVE</span>
             </div>
           </div>
@@ -1777,7 +1759,7 @@ const { useState, useEffect, useCallback } = React;
             updated_at: new Date().toISOString()
           }).eq('id', business.id).select().single();
           if (error) throw error;
-          localStorage.setItem('sr_business', JSON.stringify(data));
+          localStorage.setItem('si_business', JSON.stringify(data));
           setBusiness(data);
           alert('Profile saved!');
           setScreen('more');
@@ -1927,7 +1909,7 @@ const { useState, useEffect, useCallback } = React;
           <div className="bg-white px-5 pt-12 pb-4 sticky top-0 z-10 border-b border-slate-100">
             <div className="flex items-center gap-3">
               <button onClick={() => setScreen('more')} className="p-1 -ml-1 text-slate-600"><IconBack /></button>
-              <h1 className="text-xl font-bold">Receipt Templates</h1>
+              <h1 className="text-xl font-bold">Invoice Templates</h1>
             </div>
             <p className="text-sm text-slate-500 mt-1">5 different layouts · not just colour</p>
           </div>
@@ -1942,7 +1924,7 @@ const { useState, useEffect, useCallback } = React;
                     {t.id === 'classic' && (
                       <div className="rounded-xl overflow-hidden border border-slate-100 text-[9px]">
                         <div className="flex justify-between text-white p-2" style={{ background: t.color }}>
-                          <div><div className="opacity-70">RECEIPT</div><div className="font-bold text-[11px]">INV-1024</div></div>
+                          <div><div className="opacity-70">INVOICE</div><div className="font-bold text-[11px]">INV-1024</div></div>
                           <div className="text-right font-bold">{business?.name || 'Shop'}</div>
                         </div>
                         <div className="p-2 space-y-1">
@@ -1966,7 +1948,7 @@ const { useState, useEffect, useCallback } = React;
                       <div className="rounded-xl bg-slate-100 p-2">
                         <div className="bg-white rounded-lg overflow-hidden text-[9px] shadow-sm">
                           <div className="text-white text-center p-2" style={{ background: t.color }}>
-                            <div className="opacity-80 tracking-widest">RECEIPT</div>
+                            <div className="opacity-80 tracking-widest">INVOICE</div>
                             <div className="font-bold text-[11px]">INV-1024</div>
                           </div>
                           <div className="p-2 text-center">
@@ -1980,7 +1962,7 @@ const { useState, useEffect, useCallback } = React;
                       <div className="rounded-xl overflow-hidden border border-slate-200 text-[9px]">
                         <div className="flex justify-between p-2 border-b">
                           <span className="font-bold" style={{ color: t.color }}>{business?.name || 'Shop'}</span>
-                          <span className="font-bold">RECEIPT</span>
+                          <span className="font-bold">TAX INVOICE</span>
                         </div>
                         <div className="bg-slate-50 px-2 py-1 text-slate-500">Bill To: Customer</div>
                         <div className="text-white px-2 py-1 flex justify-between" style={{ background: t.color }}><span>Description</span><span>Amount</span></div>
@@ -2150,11 +2132,11 @@ const { useState, useEffect, useCallback } = React;
           </div>
           <div className="p-4 space-y-3">
             <div className="bg-white rounded-2xl p-4 shadow-card space-y-3">
-              <p className="text-xs font-semibold text-slate-500 uppercase">Receipt number</p>
+              <p className="text-xs font-semibold text-slate-500 uppercase">Invoice number</p>
               <div>
                 <label className="text-xs text-slate-500">Prefix</label>
                 <input value={invPrefix} onChange={e => setInvPrefix(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8))}
-                  placeholder="REC" className="w-full mt-1 px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none font-semibold" />
+                  placeholder="INV" className="w-full mt-1 px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none font-semibold" />
                 <p className="text-[10px] text-slate-400 mt-1">Next: {nextInvoiceNumber()}</p>
               </div>
               <div>
@@ -2164,8 +2146,8 @@ const { useState, useEffect, useCallback } = React;
                   className="w-full mt-1 px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none" />
               </div>
               <button onClick={() => {
-                localStorage.setItem('sr_prefix', invPrefix || 'REC');
-                localStorage.setItem('sr_theme_days', String(overdueDays || 7));
+                localStorage.setItem('si_prefix', invPrefix || 'INV');
+                localStorage.setItem('si_overdue_days', String(overdueDays || 7));
                 alert('Settings saved');
               }} className="w-full bg-brand-600 text-white font-semibold py-3 rounded-xl text-sm">Save Settings</button>
             </div>
@@ -2251,19 +2233,20 @@ const { useState, useEffect, useCallback } = React;
                 <div className={'w-6 h-6 rounded-full bg-white shadow transition ' + (darkMode ? 'translate-x-5' : '')}></div>
               </div>
             </button>
-            <a href="invoice.html" className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
-              <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-sm">SI</div>
-              <div className="flex-1">
-                <p className="font-semibold text-slate-900">Smart Invoice</p>
-                <p className="text-sm text-slate-500">Switch to invoicing app</p>
-              </div>
-              <span className="text-slate-400">→</span>
-            </a>
             <a href="quotation.html" className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
               <div className="w-11 h-11 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600 font-bold text-sm">SQ</div>
               <div className="flex-1">
                 <p className="font-semibold text-slate-900">Smart Quotation</p>
                 <p className="text-sm text-slate-500">Switch to quotation app</p>
+              </div>
+              <span className="text-slate-400">→</span>
+            </a>
+
+            <a href="receipt.html" className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
+              <div className="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 font-bold text-sm">SR</div>
+              <div className="flex-1">
+                <p className="font-semibold text-slate-900">Smart Receipt</p>
+                <p className="text-sm text-slate-500">Switch to receipt app</p>
               </div>
               <span className="text-slate-400">→</span>
             </a>
@@ -2286,7 +2269,7 @@ const { useState, useEffect, useCallback } = React;
             )}
             <button onClick={() => setScreen('templates')} className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
               <div className="flex-1">
-                <p className="font-semibold text-slate-900">Receipt Templates</p>
+                <p className="font-semibold text-slate-900">Invoice Templates</p>
                 <p className="text-sm text-slate-500">{(templates.find(t => t.id === invoiceTemplate) || {}).name || 'Classic'}</p>
               </div>
               <IconChevron />
