@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#4f46e5" />
+  <meta name="theme-color" content="#0d9488" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Smart Quotation" />
@@ -19,9 +19,9 @@
         extend: {
           colors: {
             brand: {
-              50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc',
-              400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca',
-              800: '#3730a3', 900: '#312e81',
+              50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4',
+              400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e',
+              800: '#115e59', 900: '#134e4a',
             }
           },
           fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'] },
@@ -45,7 +45,7 @@
 
     window.onerror = function(msg, url, line) {
       var el = document.getElementById('root');
-      if (el) el.innerHTML = '<div style="padding:24px;font-family:sans-serif"><h2 style="color:#b91c1c">Error</h2><pre style="white-space:pre-wrap;font-size:12px">' + String(msg) + '\nLine: ' + line + '</pre><p style="color:#666;font-size:13px">Clear site data and try again. Or re-login.</p><button onclick="localStorage.clear();location.reload()" style="padding:12px 20px;background:#4f46e5;color:#fff;border:none;border-radius:12px;font-weight:600">Clear & Reload</button></div>';
+      if (el) el.innerHTML = '<div style="padding:24px;font-family:sans-serif"><h2 style="color:#b91c1c">Error</h2><pre style="white-space:pre-wrap;font-size:12px">' + String(msg) + '\nLine: ' + line + '</pre><p style="color:#666;font-size:13px">Clear site data and try again. Or re-login.</p><button onclick="localStorage.clear();location.reload()" style="padding:12px 20px;background:#0d9488;color:#fff;border:none;border-radius:12px;font-weight:600">Clear & Reload</button></div>';
       return false;
     };
 const { useState, useEffect, useCallback } = React;
@@ -114,7 +114,7 @@ const { useState, useEffect, useCallback } = React;
       const [quotPrefix, setQuotPrefix] = useState(() => localStorage.getItem('sq_prefix') || 'SQ');
       const [overdueDays, setOverdueDays] = useState(() => Number(localStorage.getItem('sq_valid_days') || 7));
       const templates = [
-        { id: 'classic', name: 'Classic', color: '#4f46e5', desc: 'Header top · amounts right' },
+        { id: 'classic', name: 'Classic', color: '#0d9488', desc: 'Header top · amounts right' },
         { id: 'sidebar', name: 'Sidebar', color: '#0f172a', desc: 'Left strip · content right' },
         { id: 'card', name: 'Card', color: '#047857', desc: 'Centered card · soft frame' },
         { id: 'table', name: 'GST Table', color: '#1e3a5f', desc: 'Full tax table layout' },
