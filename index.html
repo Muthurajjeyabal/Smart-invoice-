@@ -91,6 +91,10 @@ const { useState, useEffect, useCallback } = React;
       const [showAddProduct, setShowAddProduct] = useState(false);
       const [showAddCustomer, setShowAddCustomer] = useState(false);
       const [selectedCustomerDetail, setSelectedCustomerDetail] = useState(null);
+      const [recurringList, setRecurringList] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('si_recurring_' + (JSON.parse(localStorage.getItem('si_business')||'null')||{}).id) || '[]'); } catch { return []; }
+      });
+      const [recForm, setRecForm] = useState({ customer_id: '', amount: '', note: '', frequency: 'monthly', day: '1' });
       const [savingProduct, setSavingProduct] = useState(false);
       const [savingCustomer, setSavingCustomer] = useState(false);
       const [newProduct, setNewProduct] = useState({ name: '', sku: '', hsn_sac: '', unit: 'pcs', price: '', gst_percent: '18', stock_quantity: '0' });
@@ -203,6 +207,17 @@ const { useState, useEffect, useCallback } = React;
       }, [business]);
 
       useEffect(() => { if (business) loadData(); }, [business, loadData]);
+      useEffect(() => {
+        if (!business?.id) return;
+        try {
+          const raw = localStorage.getItem('si_recurring_' + business.id);
+          setRecurringList(raw ? JSON.parse(raw) : []);
+        } catch { setRecurringList([]); }
+      }, [business?.id]);
+      const saveRecurringList = (list) => {
+        setRecurringList(list);
+        if (business?.id) localStorage.setItem('si_recurring_' + business.id, JSON.stringify(list));
+      };
 
       useEffect(() => {
         if (screen !== 'preview' || !lastInvoice) return;
@@ -561,12 +576,39 @@ const { useState, useEffect, useCallback } = React;
         const amt = Number(inv.total || 0).toLocaleString('en-IN');
         const st = (inv.status || 'pending').toUpperCase();
         const biz = business?.name || 'Smart Invoice';
-        const upi = business?.upi_id ? '\n💳 Pay UPI: ' + business.upi_id : '';
+        const upi = business?.upi_id ? '\n💳 Pay UPI: ' + business.upi_id + '\n🔗 Open UPI app to pay ₹' + amt : '';
         const msg = 'Hello ' + (inv.customer_name || 'Customer') + ' 👋\n\nYour invoice *' + inv.invoice_number + '* from *' + biz + '* is ready.\n\n💰 Amount: ₹' + amt + '\n📋 Status: ' + st + upi + '\n\nThank you for your business!\n— ' + biz;
         const url = phone
           ? 'https://wa.me/91' + phone + '?text=' + encodeURIComponent(msg)
           : 'https://wa.me/?text=' + encodeURIComponent(msg);
         window.open(url, '_blank');
+      };
+
+
+      const buildUpiLink = (inv) => {
+        if (!inv || !business?.upi_id) return '';
+        const pa = encodeURIComponent(business.upi_id);
+        const pn = encodeURIComponent(business.name || 'Payment');
+        const am = encodeURIComponent(Number(inv.total || 0).toFixed(2));
+        const tn = encodeURIComponent(inv.invoice_number || 'Invoice');
+        return 'upi://pay?pa=' + pa + '&pn=' + pn + '&am=' + am + '&cu=INR&tn=' + tn;
+      };
+
+      const copyPaymentLink = async (inv) => {
+        const upi = buildUpiLink(inv);
+        if (!upi) { alert('Add UPI ID in Business Profile first'); return; }
+        try {
+          await navigator.clipboard.writeText(upi);
+          alert('Payment link copied!\\n' + upi);
+        } catch (e) {
+          prompt('Copy this UPI payment link:', upi);
+        }
+      };
+
+      const openPaymentLink = (inv) => {
+        const upi = buildUpiLink(inv);
+        if (!upi) { alert('Add UPI ID in Business Profile first'); return; }
+        window.location.href = upi;
       };
 
       const printInvoice = (inv) => {
@@ -761,9 +803,13 @@ const { useState, useEffect, useCallback } = React;
                 <h1 className="text-xl font-bold text-slate-900 mt-0.5">{business?.name || 'Smart Invoice'}</h1>
                 <p className="text-xs text-slate-400 mt-0.5">Here's your business overview</p>
               </div>
-              <div className="w-11 h-11 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm">
-                {(business?.name || 'SI').substring(0, 2).toUpperCase()}
-              </div>
+              {business?.logo_url ? (
+                <img src={business.logo_url} alt="" className="w-11 h-11 rounded-full object-cover border border-slate-100" />
+              ) : (
+                <div className="w-11 h-11 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm">
+                  {(business?.name || 'SI').substring(0, 2).toUpperCase()}
+                </div>
+              )}
             </div>
           </div>
           <div className="px-5 mt-2 mb-4">
@@ -1032,10 +1078,13 @@ const { useState, useEffect, useCallback } = React;
           <div className="p-4">
             <div className="bg-white rounded-2xl shadow-soft overflow-hidden">
               <div className="text-white p-5" style={{ background: templateColor }}>
-                <div className="flex justify-between">
-                  <div>
-                    <p className="text-white/70 text-xs font-medium">INVOICE</p>
-                    <p className="text-xl font-bold mt-0.5">{lastInvoice?.invoice_number}</p>
+                <div className="flex justify-between items-start">
+                  <div className="flex gap-2 items-center">
+                    {business?.logo_url && <img src={business.logo_url} alt="" className="w-12 h-12 rounded-lg object-contain bg-white/20 p-0.5" />}
+                    <div>
+                      <p className="text-white/70 text-xs font-medium">INVOICE</p>
+                      <p className="text-xl font-bold mt-0.5">{lastInvoice?.invoice_number}</p>
+                    </div>
                   </div>
                   <div className="text-right">
                     <p className="font-bold">{business?.name}</p>
@@ -1091,10 +1140,14 @@ const { useState, useEffect, useCallback } = React;
                 <button onClick={() => markAsPaid(lastInvoice)} className="w-full bg-brand-600 text-white font-semibold py-3 rounded-2xl text-sm">Mark as Paid</button>
               )}
               {business?.upi_id && (
-                <div className="bg-white border border-slate-200 rounded-2xl p-3 text-center">
-                  <p className="text-[10px] text-slate-400 uppercase font-semibold">Scan & Pay · UPI</p>
-                  <p className="font-semibold text-sm text-slate-800 mt-0.5">{business.upi_id}</p>
-                  <p className="text-brand-600 font-bold text-sm">{formatINRFull(lastInvoice?.total)}</p>
+                <div className="bg-white border border-slate-200 rounded-2xl p-3">
+                  <p className="text-[10px] text-slate-400 uppercase font-semibold text-center">Payment</p>
+                  <p className="font-semibold text-sm text-slate-800 text-center mt-0.5">{business.upi_id}</p>
+                  <p className="text-brand-600 font-bold text-center">{formatINRFull(lastInvoice?.total)}</p>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <button onClick={() => openPaymentLink(lastInvoice)} className="bg-brand-600 text-white text-xs font-semibold py-2.5 rounded-xl">Pay via UPI</button>
+                    <button onClick={() => copyPaymentLink(lastInvoice)} className="bg-slate-100 text-slate-800 text-xs font-semibold py-2.5 rounded-xl">Copy Link</button>
+                  </div>
                 </div>
               )}
               <div className="flex gap-2">
@@ -1630,6 +1683,125 @@ const { useState, useEffect, useCallback } = React;
         </div>
       );
 
+
+      const Recurring = () => {
+        const addRecurring = () => {
+          if (!recForm.customer_id || !recForm.amount) { alert('Select customer and amount'); return; }
+          const cust = customers.find(c => c.id === recForm.customer_id);
+          const item = {
+            id: 'rec_' + Date.now(),
+            customer_id: recForm.customer_id,
+            customer_name: cust?.name || '',
+            customer_mobile: cust?.mobile || '',
+            amount: Number(recForm.amount),
+            note: recForm.note || 'Recurring',
+            frequency: recForm.frequency,
+            day: Number(recForm.day) || 1,
+            created_at: new Date().toISOString()
+          };
+          saveRecurringList([item, ...recurringList]);
+          setRecForm({ customer_id: '', amount: '', note: '', frequency: 'monthly', day: '1' });
+          alert('Recurring invoice saved');
+        };
+        const removeRec = (id) => {
+          if (!confirm('Delete this recurring?')) return;
+          saveRecurringList(recurringList.filter(r => r.id !== id));
+        };
+        const generateNow = async (r) => {
+          if (!business) return;
+          setSaving(true);
+          try {
+            const invoiceNumber = 'INV-' + (invoices.length + 1).toString().padStart(4, '0');
+            const amount = Number(r.amount);
+            const taxable = amount / 1.18;
+            const tax = amount - taxable;
+            const invData = {
+              business_id: business.id,
+              invoice_number: invoiceNumber,
+              customer_id: r.customer_id || null,
+              customer_name: r.customer_name,
+              customer_mobile: r.customer_mobile || null,
+              invoice_date: new Date().toISOString().split('T')[0],
+              subtotal: Math.round(taxable * 100) / 100,
+              discount: 0,
+              taxable_amount: Math.round(taxable * 100) / 100,
+              cgst: Math.round(tax / 2 * 100) / 100,
+              sgst: Math.round(tax / 2 * 100) / 100,
+              igst: 0,
+              total: amount,
+              amount_paid: 0,
+              balance: amount,
+              status: 'pending',
+              notes: 'Recurring · ' + r.frequency + ' · ' + (r.note || '')
+            };
+            const { data: inv, error } = await supabase.from('invoices').insert(invData).select().single();
+            if (error) throw error;
+            setLastInvoice(inv);
+            await loadData();
+            setScreen('preview');
+          } catch (err) {
+            alert('Error: ' + (err.message || err));
+          } finally {
+            setSaving(false);
+          }
+        };
+        return (
+          <div className="pb-24 min-h-screen bg-slate-50">
+            <div className="bg-white px-4 pt-12 pb-4 sticky top-0 z-10 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <button onClick={() => setScreen('more')} className="p-1 -ml-1"><IconBack /></button>
+                <h1 className="text-lg font-bold">Recurring Invoices</h1>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">Monthly rent, AMC, subscription — generate in one tap</p>
+            </div>
+            <div className="p-4 space-y-3">
+              <div className="bg-white rounded-2xl p-4 shadow-card space-y-3">
+                <p className="text-xs font-semibold text-slate-500 uppercase">New recurring</p>
+                <select value={recForm.customer_id} onChange={e => setRecForm({...recForm, customer_id: e.target.value})}
+                  className="w-full px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none">
+                  <option value="">Select customer</option>
+                  {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+                <input type="number" placeholder="Amount ₹" value={recForm.amount} onChange={e => setRecForm({...recForm, amount: e.target.value})}
+                  className="w-full px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none" />
+                <input placeholder="Note (e.g. Monthly maintenance)" value={recForm.note} onChange={e => setRecForm({...recForm, note: e.target.value})}
+                  className="w-full px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none" />
+                <div className="flex gap-2">
+                  <select value={recForm.frequency} onChange={e => setRecForm({...recForm, frequency: e.target.value})}
+                    className="flex-1 px-3 py-2.5 bg-slate-50 rounded-xl text-sm">
+                    <option value="monthly">Monthly</option>
+                    <option value="quarterly">Quarterly</option>
+                    <option value="yearly">Yearly</option>
+                  </select>
+                  <input type="number" min="1" max="28" placeholder="Day" value={recForm.day} onChange={e => setRecForm({...recForm, day: e.target.value})}
+                    className="w-20 px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none" />
+                </div>
+                <button onClick={addRecurring} className="w-full bg-brand-600 text-white font-semibold py-3 rounded-xl text-sm">Save Recurring</button>
+              </div>
+              {recurringList.length === 0 && (
+                <p className="text-center text-sm text-slate-400 py-8">No recurring invoices yet</p>
+              )}
+              {recurringList.map(r => (
+                <div key={r.id} className="bg-white rounded-2xl p-4 shadow-card">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-semibold text-slate-900">{r.customer_name}</p>
+                      <p className="text-xs text-slate-400 capitalize">{r.frequency} · Day {r.day} · {r.note}</p>
+                      <p className="text-brand-600 font-bold mt-1">{formatINR(r.amount)}</p>
+                    </div>
+                    <button onClick={() => removeRec(r.id)} className="text-xs text-rose-500">Delete</button>
+                  </div>
+                  <button onClick={() => generateNow(r)} disabled={saving}
+                    className="mt-3 w-full bg-emerald-600 text-white text-sm font-semibold py-2.5 rounded-xl disabled:opacity-60">
+                    {saving ? 'Creating...' : 'Generate Invoice Now'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      };
+
       const More = () => (
         <div className="pb-24 min-h-screen">
           <div className="bg-white px-5 pt-12 pb-6"><h1 className="text-xl font-bold">More</h1></div>
@@ -1649,7 +1821,14 @@ const { useState, useEffect, useCallback } = React;
             <button onClick={() => setScreen('templates')} className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
               <div className="flex-1">
                 <p className="font-semibold text-slate-900">Invoice Templates</p>
-                <p className="text-sm text-slate-500">{(templates.find(t => t.id === invoiceTemplate) || {}).name || 'Modern'} · colour & style</p>
+                <p className="text-sm text-slate-500">{(templates.find(t => t.id === invoiceTemplate) || {}).name || 'Classic'}</p>
+              </div>
+              <IconChevron />
+            </button>
+            <button onClick={() => setScreen('recurring')} className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
+              <div className="flex-1">
+                <p className="font-semibold text-slate-900">Recurring Invoices</p>
+                <p className="text-sm text-slate-500">Monthly / quarterly auto-ready</p>
               </div>
               <IconChevron />
             </button>
@@ -1695,6 +1874,7 @@ const { useState, useEffect, useCallback } = React;
           {screen === 'profile' && <Profile />}
           {screen === 'reports' && <Reports />}
           {screen === 'templates' && <Templates />}
+          {screen === 'recurring' && <Recurring />}
           {['dashboard', 'customers', 'products', 'more'].includes(screen) && <BottomNav />}
           {showAddProduct && <AddProductModal />}
           {showAddCustomer && <AddCustomerModal />}
