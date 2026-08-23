@@ -557,7 +557,7 @@
         ${business?.upi_id ? '<p class="muted">UPI: '+business.upi_id+'</p>' : ''}
         <p class="muted">Thank you for your business!</p>
         <button onclick="window.print()" style="margin-top:20px;padding:12px 24px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer">Print / Save as PDF</button>
-        <script>setTimeout(()=>window.print(),400)</script>
+        <script>setTimeout(function(){window.print()},400)<\/script>
         </body></html>`;
         w.document.write(html);
         w.document.close();
