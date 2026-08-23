@@ -1,0 +1,940 @@
+const { useState, useEffect, useCallback } = React;
+    const SUPABASE_URL = 'https://ysvxjeayliudyvpfsyao.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_itdjn70skg6_gElJXcEJdA_who_9TVL';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const MASTER_PIN = '9999';
+    const formatINR = (n) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n || 0);
+    const formatINRFull = (n) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(n || 0);
+    const IconHome = () => (<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z" /></svg>);
+    const IconUsers = () => (<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>);
+    const IconBox = () => (<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>);
+    const IconMore = () => (<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>);
+    const IconPlus = () => (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>);
+    const IconSearch = () => (<svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>);
+    const IconChevron = () => (<svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>);
+    const IconBack = () => (<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>);
+    const IconRefresh = () => (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>);
+    const IconLogout = () => (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>);
+
+    function App() {
+      const [business, setBusiness] = useState(() => { try { return JSON.parse(localStorage.getItem('si_business')); } catch { return null; } });
+      const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('si_admin') === '1');
+      const [loginCode, setLoginCode] = useState('');
+      const [loginPin, setLoginPin] = useState('');
+      const [loginError, setLoginError] = useState('');
+      const [loginLoading, setLoginLoading] = useState(false);
+      const [showAdmin, setShowAdmin] = useState(false);
+      const [adminForm, setAdminForm] = useState({ name: '', login_code: '', pin: '', phone: '' });
+      const [adminMsg, setAdminMsg] = useState('');
+      const [adminLoading, setAdminLoading] = useState(false);
+      const [screen, setScreen] = useState('dashboard');
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState(null);
+      const [customers, setCustomers] = useState([]);
+      const [products, setProducts] = useState([]);
+      const [invoices, setInvoices] = useState([]);
+      const [selectedCustomer, setSelectedCustomer] = useState(null);
+      const [items, setItems] = useState([]);
+      const [discount, setDiscount] = useState(0);
+      const [customerSearch, setCustomerSearch] = useState('');
+      const [productSearch, setProductSearch] = useState('');
+      const [showCustomerPicker, setShowCustomerPicker] = useState(false);
+      const [showProductPicker, setShowProductPicker] = useState(false);
+      const [saving, setSaving] = useState(false);
+      const [lastInvoice, setLastInvoice] = useState(null);
+      const [showAddProduct, setShowAddProduct] = useState(false);
+      const [showAddCustomer, setShowAddCustomer] = useState(false);
+      const [savingProduct, setSavingProduct] = useState(false);
+      const [savingCustomer, setSavingCustomer] = useState(false);
+      const [newProduct, setNewProduct] = useState({ name: '', sku: '', hsn_sac: '', unit: 'pcs', price: '', gst_percent: '18', stock_quantity: '0' });
+      const [newCustomer, setNewCustomer] = useState({ name: '', mobile: '', email: '', gstin: '', billing_address: '' });
+      const [profileForm, setProfileForm] = useState(null);
+      const [savingProfile, setSavingProfile] = useState(false);
+      const [invoiceTemplate, setInvoiceTemplate] = useState(() => localStorage.getItem('si_template') || 'modern');
+      const templates = [
+        { id: 'modern', name: 'Modern', color: '#4f46e5' },
+        { id: 'minimal', name: 'Minimal', color: '#0f172a' },
+        { id: 'corporate', name: 'Corporate', color: '#1e3a5f' },
+        { id: 'gst', name: 'GST Pro', color: '#047857' },
+        { id: 'elegant', name: 'Elegant', color: '#7c3aed' },
+      ];
+      const templateColor = (templates.find(t => t.id === invoiceTemplate) || templates[0]).color;
+      const setTemplate = (id) => { setInvoiceTemplate(id); localStorage.setItem('si_template', id); };
+
+      const subtotal = items.reduce((s, i) => s + (i.price * i.qty), 0);
+      const taxable = Math.max(0, subtotal - discount);
+      const cgst = taxable * 0.09;
+      const sgst = taxable * 0.09;
+      const total = taxable + cgst + sgst;
+
+      const handleLogin = async (e) => {
+        e.preventDefault();
+        setLoginError('');
+        setLoginLoading(true);
+        try {
+          if (loginCode.toUpperCase() === 'ADMIN' && loginPin === MASTER_PIN) {
+            localStorage.setItem('si_admin', '1');
+            setIsAdmin(true);
+            setShowAdmin(true);
+            setLoginLoading(false);
+            return;
+          }
+          const { data, error } = await supabase.from('businesses').select('*').eq('login_code', loginCode.trim().toUpperCase()).eq('pin', loginPin.trim()).eq('is_active', true).maybeSingle();
+          if (error) throw error;
+          if (!data) { setLoginError('Invalid Username or PIN'); setLoginLoading(false); return; }
+          localStorage.setItem('si_business', JSON.stringify(data));
+          localStorage.removeItem('si_admin');
+          setBusiness(data);
+          setIsAdmin(false);
+        } catch (err) {
+          setLoginError(err.message || 'Login failed');
+        } finally {
+          setLoginLoading(false);
+        }
+      };
+
+      const handleLogout = () => {
+        localStorage.removeItem('si_business');
+        localStorage.removeItem('si_admin');
+        setBusiness(null);
+        setIsAdmin(false);
+        setShowAdmin(false);
+        setCustomers([]); setProducts([]); setInvoices([]);
+        setScreen('dashboard');
+        setLoginCode(''); setLoginPin('');
+      };
+
+      const createBusiness = async (e) => {
+        e.preventDefault();
+        if (!adminForm.name || !adminForm.login_code || !adminForm.pin) { setAdminMsg('Name, Username and PIN required'); return; }
+        setAdminLoading(true); setAdminMsg('');
+        try {
+          const { data, error } = await supabase.from('businesses').insert({
+            name: adminForm.name.trim(),
+            login_code: adminForm.login_code.trim().toUpperCase(),
+            pin: adminForm.pin.trim(),
+            phone: adminForm.phone.trim() || null
+          }).select().single();
+          if (error) throw error;
+          setAdminMsg('✅ Created! Username: ' + data.login_code + '  PIN: ' + data.pin);
+          setAdminForm({ name: '', login_code: '', pin: '', phone: '' });
+        } catch (err) {
+          setAdminMsg('Error: ' + (err.message || err));
+        } finally {
+          setAdminLoading(false);
+        }
+      };
+
+      const loadData = useCallback(async () => {
+        if (!business) return;
+        setLoading(true); setError(null);
+        try {
+          const [custRes, prodRes, invRes] = await Promise.all([
+            supabase.from('customers').select('*').eq('business_id', business.id).order('name'),
+            supabase.from('products').select('*').eq('business_id', business.id).order('name'),
+            supabase.from('invoices').select('*').eq('business_id', business.id).order('created_at', { ascending: false }).limit(50)
+          ]);
+          if (custRes.error) throw custRes.error;
+          if (prodRes.error) throw prodRes.error;
+          if (invRes.error) throw invRes.error;
+          setCustomers(custRes.data || []);
+          setProducts(prodRes.data || []);
+          setInvoices(invRes.data || []);
+        } catch (err) {
+          setError(err.message || 'Failed to load data');
+        } finally {
+          setLoading(false);
+        }
+      }, [business]);
+
+      useEffect(() => { if (business) loadData(); }, [business, loadData]);
+
+      const startNewInvoice = () => { setSelectedCustomer(null); setItems([]); setDiscount(0); setLastInvoice(null); setScreen('create'); };
+
+      const addItem = (product) => {
+        const existing = items.find(i => i.product_id === product.id);
+        if (existing) setItems(items.map(i => i.product_id === product.id ? { ...i, qty: i.qty + 1 } : i));
+        else setItems([...items, { product_id: product.id, name: product.name, sku: product.sku, hsn: product.hsn_sac, price: Number(product.price), gst: Number(product.gst_percent), qty: 1 }]);
+        setShowProductPicker(false); setProductSearch('');
+      };
+
+      const updateQty = (productId, qty) => {
+        if (qty < 1) setItems(items.filter(i => i.product_id !== productId));
+        else setItems(items.map(i => i.product_id === productId ? { ...i, qty } : i));
+      };
+
+      const saveInvoice = async () => {
+        if (!selectedCustomer || items.length === 0 || !business) return;
+        setSaving(true);
+        try {
+          const invoiceNumber = 'INV-' + (invoices.length + 1).toString().padStart(4, '0');
+          const invData = {
+            business_id: business.id, invoice_number: invoiceNumber,
+            customer_id: selectedCustomer.id, customer_name: selectedCustomer.name,
+            customer_mobile: selectedCustomer.mobile, customer_gstin: selectedCustomer.gstin,
+            invoice_date: new Date().toISOString().split('T')[0],
+            subtotal, discount, taxable_amount: taxable, cgst, sgst, igst: 0,
+            total, amount_paid: 0, balance: total, status: 'pending'
+          };
+          const { data: inv, error: invErr } = await supabase.from('invoices').insert(invData).select().single();
+          if (invErr) throw invErr;
+          const itemsData = items.map(i => ({
+            business_id: business.id, invoice_id: inv.id, product_id: i.product_id, product_name: i.name,
+            hsn_sac: i.hsn, quantity: i.qty, unit_price: i.price, gst_percent: i.gst, amount: i.price * i.qty
+          }));
+          const { error: itemsErr } = await supabase.from('invoice_items').insert(itemsData);
+          if (itemsErr) throw itemsErr;
+          setLastInvoice(inv);
+          await loadData();
+          setScreen('preview');
+        } catch (err) {
+          alert('Error: ' + (err.message || err));
+        } finally {
+          setSaving(false);
+        }
+      };
+
+      const saveNewProduct = async () => {
+        if (!newProduct.name || !newProduct.price || !business) { alert('Name and Price required'); return; }
+        setSavingProduct(true);
+        try {
+          const { data, error } = await supabase.from('products').insert({
+            business_id: business.id, name: newProduct.name.trim(),
+            sku: newProduct.sku.trim() || null, hsn_sac: newProduct.hsn_sac.trim() || null,
+            unit: newProduct.unit || 'pcs', price: Number(newProduct.price) || 0,
+            gst_percent: Number(newProduct.gst_percent) || 18, stock_quantity: Number(newProduct.stock_quantity) || 0
+          }).select().single();
+          if (error) throw error;
+          setProducts(prev => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
+          setNewProduct({ name: '', sku: '', hsn_sac: '', unit: 'pcs', price: '', gst_percent: '18', stock_quantity: '0' });
+          setShowAddProduct(false);
+          if (showProductPicker) addItem(data);
+        } catch (err) {
+          alert('Error: ' + (err.message || err));
+        } finally {
+          setSavingProduct(false);
+        }
+      };
+
+      const saveNewCustomer = async () => {
+        if (!newCustomer.name || !business) { alert('Name required'); return; }
+        setSavingCustomer(true);
+        try {
+          const { data, error } = await supabase.from('customers').insert({
+            business_id: business.id, name: newCustomer.name.trim(),
+            mobile: newCustomer.mobile.trim() || null, email: newCustomer.email.trim() || null,
+            gstin: newCustomer.gstin.trim() || null, billing_address: newCustomer.billing_address.trim() || null
+          }).select().single();
+          if (error) throw error;
+          setCustomers(prev => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
+          setNewCustomer({ name: '', mobile: '', email: '', gstin: '', billing_address: '' });
+          setShowAddCustomer(false);
+          if (showCustomerPicker) { setSelectedCustomer(data); setShowCustomerPicker(false); }
+        } catch (err) {
+          alert('Error: ' + (err.message || err));
+        } finally {
+          setSavingCustomer(false);
+        }
+      };
+
+      const filteredCustomers = customers.filter(c => (c.name || '').toLowerCase().includes(customerSearch.toLowerCase()) || (c.mobile || '').includes(customerSearch));
+      const filteredProducts = products.filter(p => (p.name || '').toLowerCase().includes(productSearch.toLowerCase()) || (p.sku || '').toLowerCase().includes(productSearch.toLowerCase()));
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todaySales = invoices.filter(i => i.invoice_date === todayStr).reduce((s, i) => s + Number(i.total || 0), 0);
+      const todayCount = invoices.filter(i => i.invoice_date === todayStr).length;
+      const pendingAmount = invoices.filter(i => i.status === 'pending' || i.status === 'partial').reduce((s, i) => s + Number(i.balance || 0), 0);
+      const totalRevenue = invoices.reduce((s, i) => s + Number(i.total || 0), 0);
+
+      if (!business && !isAdmin) {
+        return (
+          <div className="max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col">
+            <div className="flex-1 flex flex-col justify-center px-6 py-12">
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-brand-600/30">
+                  <span className="text-white text-2xl font-bold">SI</span>
+                </div>
+                <h1 className="text-2xl font-bold text-slate-900">Smart Invoice</h1>
+                <p className="text-slate-500 text-sm mt-1">Create. Send. Get Paid.</p>
+              </div>
+              <div className="bg-white rounded-2xl shadow-card p-6">
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-500 uppercase">Username</label>
+                    <input value={loginCode} onChange={e => setLoginCode(e.target.value)} placeholder="e.g. DEMO" autoCapitalize="characters"
+                      className="w-full mt-1 px-4 py-3.5 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand-500/30 font-medium tracking-wide" required />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-500 uppercase">PIN</label>
+                    <input type="password" inputMode="numeric" value={loginPin} onChange={e => setLoginPin(e.target.value)} placeholder="••••" maxLength={8}
+                      className="w-full mt-1 px-4 py-3.5 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand-500/30 tracking-widest" required />
+                  </div>
+                  {loginError && <div className="bg-rose-50 text-rose-700 text-sm px-4 py-3 rounded-xl">{loginError}</div>}
+                  <button type="submit" disabled={loginLoading} className="w-full bg-brand-600 text-white font-semibold py-3.5 rounded-2xl shadow-soft shadow-brand-600/25 disabled:opacity-60">
+                    {loginLoading ? 'Checking...' : 'Login'}
+                  </button>
+                </form>
+              </div>
+              <p className="text-center text-xs text-slate-400 mt-6">Demo → Username: <b>DEMO</b> &nbsp; PIN: <b>1234</b></p>
+            </div>
+          </div>
+        );
+      }
+
+      if (isAdmin && showAdmin) {
+        return (
+          <div className="max-w-md mx-auto min-h-screen bg-slate-50">
+            <div className="bg-white px-5 pt-12 pb-6 border-b border-slate-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-500 text-sm">Admin Panel</p>
+                  <h1 className="text-xl font-bold text-slate-900">Create Business</h1>
+                </div>
+                <button onClick={handleLogout} className="text-rose-600 text-sm font-medium">Logout</button>
+              </div>
+            </div>
+            <div className="p-5">
+              <div className="bg-white rounded-2xl shadow-card p-5">
+                <form onSubmit={createBusiness} className="space-y-4">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-500 uppercase">Business Name *</label>
+                    <input value={adminForm.name} onChange={e => setAdminForm({...adminForm, name: e.target.value})} placeholder="e.g. Rajesh Electronics" className="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand-500/30" required />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-500 uppercase">Username (Login Code) *</label>
+                    <input value={adminForm.login_code} onChange={e => setAdminForm({...adminForm, login_code: e.target.value.toUpperCase()})} placeholder="e.g. RAJESH01" className="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand-500/30 tracking-wide font-medium" required />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-500 uppercase">PIN *</label>
+                    <input value={adminForm.pin} onChange={e => setAdminForm({...adminForm, pin: e.target.value})} placeholder="e.g. 4829" inputMode="numeric" maxLength={8} className="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand-500/30" required />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-500 uppercase">Phone</label>
+                    <input value={adminForm.phone} onChange={e => setAdminForm({...adminForm, phone: e.target.value})} placeholder="98765 43210" className="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl text-sm outline-none" />
+                  </div>
+                  {adminMsg && <div className={'text-sm px-4 py-3 rounded-xl ' + (adminMsg.startsWith('✅') ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-700')}>{adminMsg}</div>}
+                  <button type="submit" disabled={adminLoading} className="w-full bg-brand-600 text-white font-semibold py-3.5 rounded-2xl disabled:opacity-60">
+                    {adminLoading ? 'Creating...' : 'Create Business Account'}
+                  </button>
+                </form>
+              </div>
+              <p className="text-xs text-slate-400 text-center mt-4">Give the Username + PIN to the company.<br/>They login and manage their own data.</p>
+            </div>
+          </div>
+        );
+      }
+
+      if (loading && customers.length === 0 && products.length === 0) {
+        return (
+          <div className="max-w-md mx-auto min-h-screen flex flex-col items-center justify-center bg-slate-50">
+            <div className="w-10 h-10 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin mb-4"></div>
+            <p className="text-slate-600 font-medium">Loading...</p>
+          </div>
+        );
+      }
+
+      if (error) {
+        return (
+          <div className="max-w-md mx-auto min-h-screen flex flex-col items-center justify-center bg-slate-50 px-6 text-center">
+            <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mb-4 text-2xl">⚠️</div>
+            <h2 className="text-lg font-bold mb-2">Error</h2>
+            <p className="text-slate-600 text-sm mb-4">{error}</p>
+            <p className="text-xs text-slate-400 mb-6">Did you run the PIN schema in SQL Editor?</p>
+            <div className="flex gap-3">
+              <button onClick={loadData} className="bg-brand-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm">Retry</button>
+              <button onClick={handleLogout} className="bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl font-semibold text-sm">Logout</button>
+            </div>
+          </div>
+        );
+      }
+
+      const AddProductModal = () => (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-end">
+          <div className="bg-white w-full max-h-[90vh] rounded-t-3xl overflow-hidden">
+            <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="font-bold text-lg">Add Item / Service</h3>
+              <button onClick={() => setShowAddProduct(false)} className="text-slate-400 font-medium">Close</button>
+            </div>
+            <div className="p-4 space-y-4 overflow-y-auto max-h-[70vh]">
+              <div>
+                <label className="text-xs font-semibold text-slate-500 uppercase">Item / Service Name *</label>
+                <input value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} placeholder="e.g. Haircut, Milk 1L, Tea, Service" className="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand-500/30" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 uppercase">SKU</label>
+                  <input value={newProduct.sku} onChange={e => setNewProduct({...newProduct, sku: e.target.value})} placeholder="Optional code" className="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl text-sm outline-none" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 uppercase">HSN/SAC</label>
+                  <input value={newProduct.hsn_sac} onChange={e => setNewProduct({...newProduct, hsn_sac: e.target.value})} placeholder="Optional" className="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl text-sm outline-none" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 uppercase">Price (₹) *</label>
+                  <input type="number" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} placeholder="0" className="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl text-sm outline-none" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 uppercase">GST %</label>
+                  <input type="number" value={newProduct.gst_percent} onChange={e => setNewProduct({...newProduct, gst_percent: e.target.value})} className="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl text-sm outline-none" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 uppercase">Unit</label>
+                  <select value={newProduct.unit} onChange={e => setNewProduct({...newProduct, unit: e.target.value})} className="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl text-sm outline-none">
+                    <option value="pcs">pcs</option>
+                    <option value="kg">kg</option>
+                    <option value="litre">litre</option>
+                    <option value="packet">packet</option>
+                    <option value="box">box</option>
+                    <option value="mtr">metre</option>
+                    <option value="hour">hour</option>
+                    <option value="session">session</option>
+                    <option value="plate">plate</option>
+                    <option value="cup">cup</option>
+                    <option value="service">service</option>
+                    <option value="set">set</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 uppercase">Stock</label>
+                  <input type="number" value={newProduct.stock_quantity} onChange={e => setNewProduct({...newProduct, stock_quantity: e.target.value})} className="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl text-sm outline-none" />
+                </div>
+              </div>
+              <button onClick={saveNewProduct} disabled={savingProduct} className="w-full bg-brand-600 text-white font-semibold py-3.5 rounded-2xl disabled:opacity-60">
+                {savingProduct ? 'Saving...' : 'Save Item'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+
+      const AddCustomerModal = () => (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-end">
+          <div className="bg-white w-full max-h-[90vh] rounded-t-3xl overflow-hidden">
+            <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="font-bold text-lg">Add New Customer</h3>
+              <button onClick={() => setShowAddCustomer(false)} className="text-slate-400 font-medium">Close</button>
+            </div>
+            <div className="p-4 space-y-4 overflow-y-auto max-h-[70vh]">
+              <div>
+                <label className="text-xs font-semibold text-slate-500 uppercase">Name *</label>
+                <input value={newCustomer.name} onChange={e => setNewCustomer({...newCustomer, name: e.target.value})} placeholder="Customer Name" className="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand-500/30" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-500 uppercase">Mobile</label>
+                <input value={newCustomer.mobile} onChange={e => setNewCustomer({...newCustomer, mobile: e.target.value})} placeholder="98765 43210" className="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl text-sm outline-none" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-500 uppercase">Email</label>
+                <input value={newCustomer.email} onChange={e => setNewCustomer({...newCustomer, email: e.target.value})} placeholder="email@example.com" className="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl text-sm outline-none" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-500 uppercase">GSTIN</label>
+                <input value={newCustomer.gstin} onChange={e => setNewCustomer({...newCustomer, gstin: e.target.value})} placeholder="33AABCT1332L1Z5" className="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl text-sm outline-none" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-500 uppercase">Address</label>
+                <textarea value={newCustomer.billing_address} onChange={e => setNewCustomer({...newCustomer, billing_address: e.target.value})} rows={2} className="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl text-sm outline-none" />
+              </div>
+              <button onClick={saveNewCustomer} disabled={savingCustomer} className="w-full bg-brand-600 text-white font-semibold py-3.5 rounded-2xl disabled:opacity-60">
+                {savingCustomer ? 'Saving...' : 'Save Customer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+
+      const BottomNav = () => (
+        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 px-2 z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+          <div className="max-w-md mx-auto flex justify-around items-center h-16">
+            {[
+              { id: 'dashboard', label: 'Home', icon: <IconHome /> },
+              { id: 'customers', label: 'Customers', icon: <IconUsers /> },
+              { id: 'create', label: '', icon: null, special: true },
+              { id: 'products', label: 'Items', icon: <IconBox /> },
+              { id: 'more', label: 'More', icon: <IconMore /> },
+            ].map((tab) =>
+              tab.special ? (
+                <button key="create" onClick={startNewInvoice} className="w-14 h-14 -mt-6 rounded-full bg-brand-600 text-white shadow-lg shadow-brand-600/30 flex items-center justify-center active:scale-95 transition">
+                  <IconPlus />
+                </button>
+              ) : (
+                <button key={tab.id} onClick={() => setScreen(tab.id)} className={'flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition ' + (screen === tab.id ? 'text-brand-600' : 'text-slate-400')}>
+                  {tab.icon}
+                  <span className="text-[10px] font-medium">{tab.label}</span>
+                </button>
+              )
+            )}
+          </div>
+        </nav>
+      );
+
+
+      const markAsPaid = async (inv) => {
+        if (!inv || inv.status === 'paid') return;
+        if (!confirm('Mark ' + inv.invoice_number + ' as Paid?')) return;
+        try {
+          const { error } = await supabase.from('invoices').update({
+            status: 'paid', amount_paid: inv.total, balance: 0, updated_at: new Date().toISOString()
+          }).eq('id', inv.id);
+          if (error) throw error;
+          await loadData();
+          if (lastInvoice && lastInvoice.id === inv.id) {
+            setLastInvoice({ ...lastInvoice, status: 'paid', amount_paid: inv.total, balance: 0 });
+          }
+        } catch (err) {
+          alert('Error: ' + (err.message || err));
+        }
+      };
+
+      const shareWhatsApp = (inv) => {
+        if (!inv) return;
+        const phone = (inv.customer_mobile || '').replace(/\D/g, '');
+        const msg = 'Hello ' + (inv.customer_name || '') + ',\n\nYour invoice *' + inv.invoice_number + '* for *₹' + Number(inv.total || 0).toLocaleString('en-IN') + '* has been generated.\n\nThank you for your business!\n— ' + (business?.name || 'Smart Invoice');
+        const url = phone
+          ? 'https://wa.me/91' + phone + '?text=' + encodeURIComponent(msg)
+          : 'https://wa.me/?text=' + encodeURIComponent(msg);
+        window.open(url, '_blank');
+      };
+
+      const printInvoice = (inv) => {
+        if (!inv) return;
+        const color = templateColor;
+        const logo = business?.logo_url || '';
+        const invNo = String(inv.invoice_number || 'INV');
+        const w = window.open('', '_blank');
+        let html = '<!DOCTYPE html><html><head><title>' + invNo + '</title><style>';
+        html += 'body{font-family:system-ui,sans-serif;padding:28px;color:#111;max-width:640px;margin:0 auto}';
+        html += '.head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;border-bottom:3px solid ' + color + ';padding-bottom:16px}';
+        html += '.logo{max-height:64px;max-width:120px;object-fit:contain} h1{font-size:22px;margin:0;color:' + color + '}';
+        html += '.muted{color:#666;font-size:12px;line-height:1.4} table{width:100%;border-collapse:collapse;margin:16px 0}';
+        html += 'td{padding:8px 0;font-size:14px;border-bottom:1px solid #eee} .total{font-size:20px;font-weight:700;color:' + color + '}';
+        html += '.badge{display:inline-block;padding:4px 10px;border-radius:6px;background:' + color + ';color:#fff;font-size:11px;font-weight:600}';
+        html += '.bar{text-align:center;margin-top:20px} @media print{button{display:none}}</style></head><body>';
+        html += '<div class="head"><div style="display:flex;gap:12px;align-items:center">';
+        if (logo) html += '<img class="logo" src="' + logo + '" />';
+        html += '<div><h1>' + (business?.name || 'Invoice') + '</h1>';
+        html += '<p class="muted">' + (business?.address || '') + '<br>' + (business?.phone || '');
+        if (business?.gstin) html += '<br>GSTIN: ' + business.gstin;
+        html += '</p></div></div>';
+        html += '<div style="text-align:right"><span class="badge">' + String(inv.status || 'pending').toUpperCase() + '</span>';
+        html += '<p style="margin:8px 0 0;font-weight:700;font-size:16px">' + invNo + '</p>';
+        html += '<p class="muted">' + (inv.invoice_date || '') + '</p></div></div>';
+        html += '<p><strong>Bill To:</strong> ' + (inv.customer_name || '') + '<br><span class="muted">' + (inv.customer_mobile || '') + '</span></p>';
+        html += '<table>';
+        html += '<tr><td>Subtotal</td><td style="text-align:right">₹' + Number(inv.subtotal||0).toFixed(2) + '</td></tr>';
+        if (Number(inv.discount) > 0) html += '<tr><td>Discount</td><td style="text-align:right">−₹' + Number(inv.discount).toFixed(2) + '</td></tr>';
+        html += '<tr><td>CGST</td><td style="text-align:right">₹' + Number(inv.cgst||0).toFixed(2) + '</td></tr>';
+        html += '<tr><td>SGST</td><td style="text-align:right">₹' + Number(inv.sgst||0).toFixed(2) + '</td></tr>';
+        html += '<tr><td class="total">TOTAL</td><td class="total" style="text-align:right">₹' + Number(inv.total||0).toFixed(2) + '</td></tr></table>';
+        if (business?.upi_id) html += '<p class="muted">UPI: <strong>' + business.upi_id + '</strong></p>';
+        html += '<div class="bar"><svg id="bc"></svg><p class="muted">' + invNo + '</p></div>';
+        html += '<p class="muted" style="margin-top:16px">Thank you for your business!</p>';
+        html += '<button onclick="window.print()" style="margin-top:16px;padding:12px 24px;background:' + color + ';color:#fff;border:none;border-radius:8px;font-weight:600">Print / Save as PDF</button>';
+        html += '<scr' + 'ipt src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></scr' + 'ipt>';
+        html += '<scr' + 'ipt>try{JsBarcode("#bc","' + invNo.replace(/"/g,'') + '",{format:"CODE128",width:1.5,height:40,displayValue:false,margin:0})}catch(e){}setTimeout(function(){window.print()},500);</scr' + 'ipt>';
+        html += '</body></html>';
+        w.document.write(html);
+        w.document.close();
+      };
+
+      const completePOSSale = async (payMethod) => {
+        if (items.length === 0 || !business) return;
+        setSaving(true);
+        try {
+          const invoiceNumber = 'POS-' + (invoices.length + 1).toString().padStart(4, '0');
+          const custName = selectedCustomer ? selectedCustomer.name : 'Walk-in Customer';
+          const invData = {
+            business_id: business.id,
+            invoice_number: invoiceNumber,
+            customer_id: selectedCustomer ? selectedCustomer.id : null,
+            customer_name: custName,
+            customer_mobile: selectedCustomer ? selectedCustomer.mobile : null,
+            customer_gstin: selectedCustomer ? selectedCustomer.gstin : null,
+            invoice_date: new Date().toISOString().split('T')[0],
+            subtotal, discount, taxable_amount: taxable, cgst, sgst, igst: 0,
+            total, amount_paid: total, balance: 0, status: 'paid',
+            notes: 'POS · ' + payMethod
+          };
+          const { data: inv, error: invErr } = await supabase.from('invoices').insert(invData).select().single();
+          if (invErr) throw invErr;
+          const itemsData = items.map(i => ({
+            business_id: business.id, invoice_id: inv.id, product_id: i.product_id, product_name: i.name,
+            hsn_sac: i.hsn, quantity: i.qty, unit_price: i.price, gst_percent: i.gst, amount: i.price * i.qty
+          }));
+          await supabase.from('invoice_items').insert(itemsData);
+          setLastInvoice(inv);
+          await loadData();
+          setScreen('preview');
+        } catch (err) {
+          alert('Error: ' + (err.message || err));
+        } finally {
+          setSaving(false);
+        }
+      };
+
+      const POS = () => (
+        <div className="pb-8 min-h-screen bg-slate-50 flex flex-col">
+          <div className="bg-white px-4 pt-12 pb-3 sticky top-0 z-20 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setScreen('dashboard')} className="p-1 -ml-1 text-slate-600"><IconBack /></button>
+              <h1 className="text-lg font-bold text-slate-900 flex-1">Quick POS</h1>
+              <span className="text-xs font-semibold bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg">LIVE</span>
+            </div>
+          </div>
+
+          <div className="px-4 pt-3">
+            <button onClick={() => setShowCustomerPicker(true)} className="w-full flex items-center gap-3 p-3 bg-white rounded-xl shadow-card text-left">
+              <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center text-brand-700 font-bold text-sm">
+                {selectedCustomer ? selectedCustomer.name.charAt(0) : '?'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-slate-900 text-sm">{selectedCustomer ? selectedCustomer.name : 'Walk-in Customer'}</p>
+                <p className="text-xs text-slate-400">{selectedCustomer ? selectedCustomer.mobile : 'Tap to select or leave as walk-in'}</p>
+              </div>
+              <IconChevron />
+            </button>
+          </div>
+
+          <div className="px-4 pt-3 flex-1">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-slate-500 uppercase">Tap items to add</p>
+              <button onClick={() => setShowAddProduct(true)} className="text-brand-600 text-xs font-semibold">+ New item</button>
+            </div>
+            <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+              {products.map(p => (
+                <button key={p.id} onClick={() => addItem(p)} className="bg-white rounded-xl p-3 shadow-card text-left active:scale-95 transition">
+                  <p className="font-semibold text-slate-900 text-sm truncate">{p.name}</p>
+                  <p className="text-brand-600 font-bold text-sm mt-1">{formatINR(p.price)}</p>
+                </button>
+              ))}
+              {products.length === 0 && (
+                <div className="col-span-2 text-center py-6 text-slate-400 text-sm">
+                  No items yet. <button onClick={() => setShowAddProduct(true)} className="text-brand-600 font-medium">Add first item</button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="px-4 pt-3">
+            <div className="bg-white rounded-2xl p-4 shadow-card">
+              <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Cart ({items.length})</p>
+              {items.length === 0 ? (
+                <p className="text-slate-400 text-sm py-4 text-center">Tap items above to add</p>
+              ) : (
+                <div className="space-y-2 max-h-36 overflow-y-auto">
+                  {items.map(item => (
+                    <div key={item.product_id} className="flex items-center gap-2">
+                      <p className="flex-1 text-sm font-medium text-slate-800 truncate">{item.name}</p>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => updateQty(item.product_id, item.qty - 1)} className="w-7 h-7 rounded-lg bg-slate-100 font-bold text-sm">−</button>
+                        <span className="w-5 text-center text-sm font-semibold">{item.qty}</span>
+                        <button onClick={() => updateQty(item.product_id, item.qty + 1)} className="w-7 h-7 rounded-lg bg-slate-100 font-bold text-sm">+</button>
+                      </div>
+                      <p className="text-sm font-semibold w-16 text-right">{formatINR(item.price * item.qty)}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {items.length > 0 && (
+                <div className="border-t border-slate-100 mt-3 pt-3 flex justify-between items-center">
+                  <span className="font-bold text-slate-900">TOTAL</span>
+                  <span className="text-xl font-bold text-emerald-600">{formatINRFull(total)}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {items.length > 0 && (
+            <div className="px-4 pt-4 pb-6 space-y-2">
+              <p className="text-xs font-semibold text-slate-500 uppercase text-center mb-1">Collect Payment</p>
+              <div className="grid grid-cols-3 gap-2">
+                <button onClick={() => completePOSSale('Cash')} disabled={saving} className="bg-slate-800 text-white font-semibold py-3.5 rounded-xl text-sm disabled:opacity-50">Cash</button>
+                <button onClick={() => completePOSSale('UPI')} disabled={saving} className="bg-emerald-600 text-white font-semibold py-3.5 rounded-xl text-sm disabled:opacity-50">UPI</button>
+                <button onClick={() => completePOSSale('Card')} disabled={saving} className="bg-brand-600 text-white font-semibold py-3.5 rounded-xl text-sm disabled:opacity-50">Card</button>
+              </div>
+              {saving && <p className="text-center text-sm text-slate-500">Saving...</p>}
+            </div>
+          )}
+
+          {showCustomerPicker && (
+            <div className="fixed inset-0 bg-black/40 z-50 flex items-end">
+              <div className="bg-white w-full max-h-[70vh] rounded-t-3xl overflow-hidden">
+                <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                  <h3 className="font-bold text-lg">Customer</h3>
+                  <button onClick={() => setShowCustomerPicker(false)} className="text-slate-400 font-medium">Close</button>
+                </div>
+                <div className="p-2">
+                  <button onClick={() => { setSelectedCustomer(null); setShowCustomerPicker(false); }} className="w-full p-3 rounded-xl hover:bg-slate-50 text-left font-medium text-slate-700">Walk-in Customer</button>
+                  {customers.map(c => (
+                    <button key={c.id} onClick={() => { setSelectedCustomer(c); setShowCustomerPicker(false); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 text-left">
+                      <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center text-brand-700 font-bold">{c.name.charAt(0)}</div>
+                      <div>
+                        <p className="font-semibold text-slate-900">{c.name}</p>
+                        <p className="text-sm text-slate-500">{c.mobile}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          {showAddProduct && <AddProductModal />}
+        </div>
+      );
+
+
+
+      const openProfile = () => {
+        setProfileForm({
+          name: business?.name || '',
+          phone: business?.phone || '',
+          email: business?.email || '',
+          address: business?.address || '',
+          gstin: business?.gstin || '',
+          upi_id: business?.upi_id || '',
+          bank_name: business?.bank_name || '',
+          bank_account: business?.bank_account || '',
+          bank_ifsc: business?.bank_ifsc || '',
+          terms: business?.terms || '',
+          logo_url: business?.logo_url || ''
+        });
+        setScreen('profile');
+      };
+
+      const onLogoFile = (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        if (file.size > 500000) { alert('Logo max 500KB'); return; }
+        const reader = new FileReader();
+        reader.onload = () => setProfileForm(prev => ({ ...prev, logo_url: reader.result }));
+        reader.readAsDataURL(file);
+      };
+
+      const saveProfile = async () => {
+        if (!profileForm?.name || !business) return;
+        setSavingProfile(true);
+        try {
+          const { data, error } = await supabase.from('businesses').update({
+            name: profileForm.name.trim(),
+            phone: profileForm.phone.trim() || null,
+            email: profileForm.email.trim() || null,
+            address: profileForm.address.trim() || null,
+            gstin: profileForm.gstin.trim() || null,
+            upi_id: profileForm.upi_id.trim() || null,
+            logo_url: profileForm.logo_url || null,
+            bank_name: profileForm.bank_name.trim() || null,
+            bank_account: profileForm.bank_account.trim() || null,
+            bank_ifsc: profileForm.bank_ifsc.trim() || null,
+            terms: profileForm.terms.trim() || null,
+            updated_at: new Date().toISOString()
+          }).eq('id', business.id).select().single();
+          if (error) throw error;
+          localStorage.setItem('si_business', JSON.stringify(data));
+          setBusiness(data);
+          alert('Profile saved!');
+          setScreen('more');
+        } catch (err) {
+          alert('Error: ' + (err.message || err));
+        } finally {
+          setSavingProfile(false);
+        }
+      };
+
+      const Profile = () => (
+        <div className="pb-28 min-h-screen bg-slate-50">
+          <div className="bg-white px-4 pt-12 pb-4 sticky top-0 z-20 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setScreen('more')} className="p-1 -ml-1 text-slate-600"><IconBack /></button>
+              <h1 className="text-lg font-bold text-slate-900 flex-1">Business Profile</h1>
+            </div>
+          </div>
+          <div className="p-4 space-y-3">
+            <div className="bg-white rounded-2xl p-4 border border-slate-100">
+              <label className="text-xs font-semibold text-slate-500 uppercase">Logo</label>
+              <div className="flex items-center gap-4 mt-2">
+                {profileForm?.logo_url ? (
+                  <img src={profileForm.logo_url} alt="Logo" className="w-16 h-16 object-contain rounded-xl bg-slate-50 border border-slate-100" />
+                ) : (
+                  <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 text-xs">No logo</div>
+                )}
+                <div className="flex-1">
+                  <input type="file" accept="image/*" onChange={onLogoFile} className="text-xs w-full" />
+                  <p className="text-[10px] text-slate-400 mt-1">JPG/PNG · Max 500KB</p>
+                  {profileForm?.logo_url && (
+                    <button type="button" onClick={() => setProfileForm({...profileForm, logo_url: ''})} className="text-xs text-rose-600 mt-1">Remove</button>
+                  )}
+                </div>
+              </div>
+            </div>
+            {[
+              ['name', 'Business Name *', 'Your shop name'],
+              ['phone', 'Phone', '98765 43210'],
+              ['email', 'Email', 'shop@email.com'],
+              ['address', 'Address', 'Full address'],
+              ['gstin', 'GSTIN', '33XXXXX1234X1Z5'],
+              ['upi_id', 'UPI ID', 'shop@upi'],
+              ['bank_name', 'Bank Name', 'SBI / HDFC'],
+              ['bank_account', 'Account Number', ''],
+              ['bank_ifsc', 'IFSC', ''],
+            ].map(([key, label, ph]) => (
+              <div key={key}>
+                <label className="text-xs font-semibold text-slate-500 uppercase">{label}</label>
+                <input value={profileForm?.[key] || ''} onChange={e => setProfileForm({...profileForm, [key]: e.target.value})}
+                  placeholder={ph} className="w-full mt-1 px-4 py-3 bg-white rounded-xl text-sm outline-none border border-slate-100 focus:ring-2 focus:ring-brand-500/30" />
+              </div>
+            ))}
+            <div>
+              <label className="text-xs font-semibold text-slate-500 uppercase">Terms & Conditions</label>
+              <textarea value={profileForm?.terms || ''} onChange={e => setProfileForm({...profileForm, terms: e.target.value})}
+                rows={2} placeholder="Payment due in 7 days..." className="w-full mt-1 px-4 py-3 bg-white rounded-xl text-sm outline-none border border-slate-100" />
+            </div>
+            <button onClick={saveProfile} disabled={savingProfile} className="w-full bg-brand-600 text-white font-semibold py-3.5 rounded-2xl disabled:opacity-60">
+              {savingProfile ? 'Saving...' : 'Save Profile'}
+            </button>
+          </div>
+        </div>
+      );
+
+      const Reports = () => {
+        const now = new Date();
+        const startOfWeek = new Date(now); startOfWeek.setDate(now.getDate() - now.getDay());
+        const monthStart = now.toISOString().slice(0, 7) + '-01';
+        const weekStart = startOfWeek.toISOString().split('T')[0];
+        const today = now.toISOString().split('T')[0];
+
+        const sum = (list) => list.reduce((s, i) => s + Number(i.total || 0), 0);
+        const todayInv = invoices.filter(i => i.invoice_date === today);
+        const weekInv = invoices.filter(i => i.invoice_date >= weekStart);
+        const monthInv = invoices.filter(i => i.invoice_date >= monthStart);
+        const paidInv = invoices.filter(i => i.status === 'paid');
+        const unpaidInv = invoices.filter(i => i.status !== 'paid' && i.status !== 'cancelled');
+
+        return (
+          <div className="pb-24 min-h-screen">
+            <div className="bg-white px-5 pt-12 pb-4 sticky top-0 z-10 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <button onClick={() => setScreen('more')} className="p-1 -ml-1 text-slate-600"><IconBack /></button>
+                <h1 className="text-xl font-bold">Reports</h1>
+              </div>
+            </div>
+            <div className="p-4 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white rounded-2xl p-4 shadow-card">
+                  <p className="text-xs text-slate-500 font-medium">Today</p>
+                  <p className="text-xl font-bold text-slate-900 mt-1">{formatINR(sum(todayInv))}</p>
+                  <p className="text-xs text-slate-400">{todayInv.length} invoices</p>
+                </div>
+                <div className="bg-white rounded-2xl p-4 shadow-card">
+                  <p className="text-xs text-slate-500 font-medium">This Week</p>
+                  <p className="text-xl font-bold text-slate-900 mt-1">{formatINR(sum(weekInv))}</p>
+                  <p className="text-xs text-slate-400">{weekInv.length} invoices</p>
+                </div>
+                <div className="bg-white rounded-2xl p-4 shadow-card">
+                  <p className="text-xs text-slate-500 font-medium">This Month</p>
+                  <p className="text-xl font-bold text-slate-900 mt-1">{formatINR(sum(monthInv))}</p>
+                  <p className="text-xs text-slate-400">{monthInv.length} invoices</p>
+                </div>
+                <div className="bg-white rounded-2xl p-4 shadow-card">
+                  <p className="text-xs text-slate-500 font-medium">All Time</p>
+                  <p className="text-xl font-bold text-slate-900 mt-1">{formatINR(sum(invoices))}</p>
+                  <p className="text-xs text-slate-400">{invoices.length} invoices</p>
+                </div>
+              </div>
+              <div className="bg-white rounded-2xl p-4 shadow-card">
+                <p className="text-xs font-semibold text-slate-500 uppercase mb-3">Payment Status</p>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-emerald-700 font-medium">Paid</span>
+                  <span className="font-semibold">{formatINR(sum(paidInv))} · {paidInv.length}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-rose-600 font-medium">Outstanding</span>
+                  <span className="font-semibold">{formatINR(sum(unpaidInv))} · {unpaidInv.length}</span>
+                </div>
+              </div>
+              <div className="bg-white rounded-2xl p-4 shadow-card">
+                <p className="text-xs font-semibold text-slate-500 uppercase mb-3">Outstanding Invoices</p>
+                {unpaidInv.length === 0 ? (
+                  <p className="text-sm text-slate-400 text-center py-4">All clear ✓</p>
+                ) : unpaidInv.slice(0, 15).map(inv => (
+                  <div key={inv.id} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+                    <div>
+                      <p className="text-sm font-medium text-slate-900">{inv.customer_name}</p>
+                      <p className="text-xs text-slate-400">{inv.invoice_number}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold">{formatINR(inv.balance || inv.total)}</p>
+                      <button onClick={() => markAsPaid(inv)} className="text-[10px] font-semibold text-emerald-600">Mark Paid</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      const More = () => (
+        <div className="pb-24 min-h-screen">
+          <div className="bg-white px-5 pt-12 pb-6"><h1 className="text-xl font-bold">More</h1></div>
+          <div className="px-4 space-y-2">
+            <div className="bg-white rounded-2xl p-4 shadow-card">
+              <p className="text-sm text-slate-500">Business</p>
+              <p className="font-semibold text-slate-900 mt-0.5">{business?.name}</p>
+              <p className="text-xs text-slate-400 mt-1">Username: {business?.login_code}</p>
+            </div>
+            <button onClick={openProfile} className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
+              <div className="flex-1">
+                <p className="font-semibold text-slate-900">Business Profile</p>
+                <p className="text-sm text-slate-500">Name, UPI, GSTIN, Address</p>
+              </div>
+              <IconChevron />
+            </button>
+            <button onClick={() => setScreen('reports')} className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
+              <div className="flex-1">
+                <p className="font-semibold text-slate-900">Reports</p>
+                <p className="text-sm text-slate-500">Sales, paid vs unpaid</p>
+              </div>
+              <IconChevron />
+            </button>
+            <button onClick={loadData} className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
+              <div className="flex-1">
+                <p className="font-semibold text-slate-900">Refresh Data</p>
+                <p className="text-sm text-slate-500">Reload from server</p>
+              </div>
+              <IconChevron />
+            </button>
+            <button onClick={handleLogout} className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
+              <div className="flex-1">
+                <p className="font-semibold text-rose-600">Logout</p>
+                <p className="text-sm text-slate-500">Sign out</p>
+              </div>
+              <IconLogout />
+            </button>
+          </div>
+        </div>
+      );
+
+
+      return (
+        <div className="max-w-md mx-auto bg-slate-50 min-h-screen relative">
+          {screen === 'dashboard' && <Dashboard />}
+          {screen === 'create' && <CreateInvoice />}
+          {screen === 'pos' && <POS />}
+          {screen === 'preview' && <Preview />}
+          {screen === 'customers' && <Customers />}
+          {screen === 'products' && <Products />}
+          {screen === 'more' && <More />}
+          {screen === 'profile' && <Profile />}
+          {screen === 'reports' && <Reports />}
+          {['dashboard', 'customers', 'products', 'more'].includes(screen) && <BottomNav />}
+          {showAddProduct && <AddProductModal />}
+          {showAddCustomer && <AddCustomerModal />}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
