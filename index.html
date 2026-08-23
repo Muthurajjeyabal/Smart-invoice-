@@ -107,6 +107,8 @@ const { useState, useEffect, useCallback } = React;
       const [profileForm, setProfileForm] = useState(null);
       const [savingProfile, setSavingProfile] = useState(false);
       const [invoiceTemplate, setInvoiceTemplate] = useState(() => localStorage.getItem('si_template') || 'classic');
+      const [invPrefix, setInvPrefix] = useState(() => localStorage.getItem('si_prefix') || 'INV');
+      const [overdueDays, setOverdueDays] = useState(() => Number(localStorage.getItem('si_overdue_days') || 7));
       const templates = [
         { id: 'classic', name: 'Classic', color: '#4f46e5', desc: 'Header top · amounts right' },
         { id: 'sidebar', name: 'Sidebar', color: '#0f172a', desc: 'Left strip · content right' },
@@ -235,6 +237,72 @@ const { useState, useEffect, useCallback } = React;
         } catch (e) {}
       }, [screen, lastInvoice]);
 
+
+      const nextInvoiceNumber = () => {
+        const prefix = invPrefix || 'INV';
+        const nums = invoices
+          .map(i => {
+            const m = String(i.invoice_number || '').match(/(\d+)$/);
+            return m ? parseInt(m[1], 10) : 0;
+          });
+        const max = nums.length ? Math.max(...nums) : 0;
+        return prefix + '-' + String(max + 1).padStart(4, '0');
+      };
+
+      const getInvoiceStatus = (inv) => {
+        if (!inv) return 'pending';
+        if (inv.status === 'paid') return 'paid';
+        if (inv.status === 'partial') return 'partial';
+        const days = overdueDays || 7;
+        if (inv.invoice_date) {
+          const d = new Date(inv.invoice_date);
+          const now = new Date();
+          const diff = (now - d) / (1000 * 60 * 60 * 24);
+          if (diff > days) return 'overdue';
+        }
+        return inv.status || 'pending';
+      };
+
+      const statusStyle = (st) => {
+        if (st === 'paid') return 'bg-emerald-50 text-emerald-700';
+        if (st === 'partial') return 'bg-amber-50 text-amber-700';
+        if (st === 'overdue') return 'bg-rose-100 text-rose-800';
+        return 'bg-slate-100 text-slate-600';
+      };
+
+      const statusLabel = (st) => {
+        if (st === 'paid') return 'Paid';
+        if (st === 'partial') return 'Partial';
+        if (st === 'overdue') return 'Overdue';
+        return 'Pending';
+      };
+
+      const emailInvoice = (inv) => {
+        if (!inv) return;
+        const sub = encodeURIComponent('Invoice ' + (inv.invoice_number || '') + ' from ' + (business?.name || ''));
+        const body = encodeURIComponent(
+          'Hello ' + (inv.customer_name || '') + ',\n\nPlease find invoice ' + inv.invoice_number +
+          ' for ₹' + Number(inv.total || 0).toLocaleString('en-IN') +
+          '.\nStatus: ' + (inv.status || 'pending') +
+          (business?.upi_id ? '\nPay UPI: ' + business.upi_id : '') +
+          '\n\nThank you,\n' + (business?.name || '')
+        );
+        window.location.href = 'mailto:' + (inv.customer_email || '') + '?subject=' + sub + '&body=' + body;
+      };
+
+      const reduceStockForItems = async (lineItems) => {
+        if (!lineItems || !lineItems.length) return;
+        for (const line of lineItems) {
+          if (!line.product_id) continue;
+          const p = products.find(x => x.id === line.product_id);
+          if (!p || p.stock_quantity == null) continue;
+          const newQty = Math.max(0, Number(p.stock_quantity) - Number(line.qty || line.quantity || 0));
+          try {
+            await supabase.from('products').update({ stock_quantity: newQty }).eq('id', line.product_id);
+          } catch (e) {}
+        }
+      };
+
       const startNewInvoice = () => { setSelectedCustomer(null); setItems([]); setDiscount(0); setIsInterstate(false); setLastInvoice(null); setScreen('create'); };
 
       const addItem = (product) => {
@@ -253,7 +321,7 @@ const { useState, useEffect, useCallback } = React;
         if (!selectedCustomer || items.length === 0 || !business) return;
         setSaving(true);
         try {
-          const invoiceNumber = 'INV-' + (invoices.length + 1).toString().padStart(4, '0');
+          const invoiceNumber = nextInvoiceNumber();
           const invData = {
             business_id: business.id, invoice_number: invoiceNumber,
             customer_id: selectedCustomer.id, customer_name: selectedCustomer.name,
@@ -843,6 +911,7 @@ const { useState, useEffect, useCallback } = React;
             hsn_sac: i.hsn, quantity: i.qty, unit_price: i.price, gst_percent: i.gst, amount: i.price * i.qty
           }));
           await supabase.from('invoice_items').insert(itemsData);
+          await reduceStockForItems(items);
           setLastInvoice(inv);
           await loadData();
           setScreen('preview');
@@ -959,8 +1028,8 @@ const { useState, useEffect, useCallback } = React;
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-slate-900">{formatINR(inv.total)}</p>
-                      <span className={'text-[10px] font-semibold px-2 py-0.5 rounded-full ' + (inv.status === 'paid' ? 'bg-emerald-50 text-emerald-700' : inv.status === 'partial' ? 'bg-amber-50 text-amber-700' : 'bg-rose-50 text-rose-700')}>
-                        {inv.status === 'paid' ? 'Paid' : inv.status === 'partial' ? 'Partial' : 'Pending'}
+                      <span className={'text-[10px] font-semibold px-2 py-0.5 rounded-full ' + statusStyle(getInvoiceStatus(inv))}>
+                        {statusLabel(getInvoiceStatus(inv))}
                       </span>
                     </div>
                   </div>
@@ -1216,6 +1285,7 @@ const { useState, useEffect, useCallback } = React;
                 <button onClick={() => shareWhatsApp(lastInvoice)} className="bg-emerald-600 text-white font-semibold py-3 rounded-2xl text-sm">WhatsApp</button>
                 <button onClick={() => printInvoice(lastInvoice)} className="bg-slate-900 text-white font-semibold py-3 rounded-2xl text-sm">Download PDF</button>
               </div>
+              <button onClick={() => emailInvoice(lastInvoice)} className="w-full bg-white border border-slate-200 font-semibold py-3 rounded-2xl text-sm">Email Invoice</button>
               {lastInvoice?.status !== 'paid' && (
                 <>
                   <button onClick={() => sendPaymentReminder(lastInvoice)} className="w-full bg-amber-500 text-white font-semibold py-3 rounded-2xl text-sm">Payment Reminder · WhatsApp</button>
@@ -1351,6 +1421,9 @@ const { useState, useEffect, useCallback } = React;
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-slate-900">{p.name}</p>
                   <p className="text-xs text-slate-400">{p.sku} · {p.gst_percent}% GST</p>
+                  {Number(p.stock_quantity) <= 5 && (
+                    <p className="text-[10px] font-semibold text-rose-600 mt-0.5">Stock: {p.stock_quantity ?? 0}</p>
+                  )}
                 </div>
                 <p className="font-bold text-slate-900">{formatINR(p.price)}</p>
               </div>
@@ -1794,7 +1867,7 @@ const { useState, useEffect, useCallback } = React;
           if (!business) return;
           setSaving(true);
           try {
-            const invoiceNumber = 'INV-' + (invoices.length + 1).toString().padStart(4, '0');
+            const invoiceNumber = nextInvoiceNumber();
             const amount = Number(r.amount);
             const taxable = amount / 1.18;
             const tax = amount - taxable;
@@ -1885,6 +1958,44 @@ const { useState, useEffect, useCallback } = React;
         );
       };
 
+
+      const Settings = () => (
+        <div className="pb-24 min-h-screen bg-slate-50">
+          <div className="bg-white px-4 pt-12 pb-4 sticky top-0 z-10 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setScreen('more')} className="p-1 -ml-1"><IconBack /></button>
+              <h1 className="text-lg font-bold">Settings</h1>
+            </div>
+          </div>
+          <div className="p-4 space-y-3">
+            <div className="bg-white rounded-2xl p-4 shadow-card space-y-3">
+              <p className="text-xs font-semibold text-slate-500 uppercase">Invoice number</p>
+              <div>
+                <label className="text-xs text-slate-500">Prefix</label>
+                <input value={invPrefix} onChange={e => setInvPrefix(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8))}
+                  placeholder="INV" className="w-full mt-1 px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none font-semibold" />
+                <p className="text-[10px] text-slate-400 mt-1">Next: {nextInvoiceNumber()}</p>
+              </div>
+              <div>
+                <label className="text-xs text-slate-500">Overdue after (days)</label>
+                <input type="number" min="1" max="90" value={overdueDays}
+                  onChange={e => setOverdueDays(Math.max(1, Number(e.target.value) || 7))}
+                  className="w-full mt-1 px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none" />
+              </div>
+              <button onClick={() => {
+                localStorage.setItem('si_prefix', invPrefix || 'INV');
+                localStorage.setItem('si_overdue_days', String(overdueDays || 7));
+                alert('Settings saved');
+              }} className="w-full bg-brand-600 text-white font-semibold py-3 rounded-xl text-sm">Save Settings</button>
+            </div>
+            <div className="bg-white rounded-2xl p-4 shadow-card">
+              <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Stock tip</p>
+              <p className="text-sm text-slate-600">When you save an invoice or POS sale, product stock reduces automatically.</p>
+            </div>
+          </div>
+        </div>
+      );
+
       const More = () => (
         <div className="pb-24 min-h-screen">
           <div className="bg-white px-5 pt-12 pb-6"><h1 className="text-xl font-bold">More</h1></div>
@@ -1912,6 +2023,13 @@ const { useState, useEffect, useCallback } = React;
               <div className="flex-1">
                 <p className="font-semibold text-slate-900">Recurring Invoices</p>
                 <p className="text-sm text-slate-500">Monthly / quarterly auto-ready</p>
+              </div>
+              <IconChevron />
+            </button>
+            <button onClick={() => setScreen('settings')} className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
+              <div className="flex-1">
+                <p className="font-semibold text-slate-900">Settings</p>
+                <p className="text-sm text-slate-500">Invoice prefix · Overdue days</p>
               </div>
               <IconChevron />
             </button>
@@ -1971,6 +2089,7 @@ const { useState, useEffect, useCallback } = React;
           {screen === 'reports' && <Reports />}
           {screen === 'templates' && <Templates />}
           {screen === 'recurring' && <Recurring />}
+          {screen === 'settings' && <Settings />}
           {['dashboard', 'customers', 'products', 'more'].includes(screen) && <BottomNav />}
           {showAddProduct && <AddProductModal />}
           {showAddCustomer && <AddCustomerModal />}
