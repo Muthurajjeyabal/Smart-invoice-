@@ -807,6 +807,67 @@ const { useState, useEffect, useCallback } = React;
       };
 
 
+
+      const generateReceiptFromInvoice = async (inv) => {
+        if (!inv || !business) return;
+        if (!confirm('Generate receipt for ' + (inv.invoice_number || '') + '?')) return;
+        try {
+          // load items
+          let items = [];
+          const { data: invItems, error: itemsErr } = await supabase.from('invoice_items').select('*').eq('invoice_id', inv.id);
+          if (itemsErr) throw itemsErr;
+          items = invItems || [];
+
+          // next receipt number
+          const prefix = (localStorage.getItem('sr_prefix') || 'REC').toUpperCase();
+          const { data: existing } = await supabase.from('receipts').select('receipt_number').eq('business_id', business.id).order('created_at', { ascending: false }).limit(50);
+          let maxN = 0;
+          (existing || []).forEach(r => {
+            const m = String(r.receipt_number || '').match(/(\d+)$/);
+            if (m) maxN = Math.max(maxN, parseInt(m[1], 10));
+          });
+          const receiptNumber = prefix + '-' + String(maxN + 1).padStart(4, '0');
+
+          const tax = Number(inv.cgst || 0) + Number(inv.sgst || 0) + Number(inv.igst || 0);
+          const recData = {
+            business_id: business.id,
+            receipt_number: receiptNumber,
+            invoice_id: inv.id,
+            customer_id: inv.customer_id || null,
+            customer_name: inv.customer_name,
+            customer_mobile: inv.customer_mobile,
+            receipt_date: new Date().toISOString().split('T')[0],
+            payment_mode: 'cash',
+            subtotal: Number(inv.subtotal || 0),
+            discount: Number(inv.discount || 0),
+            tax: tax,
+            total: Number(inv.total || 0),
+            notes: 'From invoice ' + (inv.invoice_number || '')
+          };
+          const { data: rec, error: recErr } = await supabase.from('receipts').insert(recData).select().single();
+          if (recErr) throw recErr;
+
+          if (items.length) {
+            const rows = items.map(i => ({
+              business_id: business.id,
+              receipt_id: rec.id,
+              product_id: i.product_id || null,
+              product_name: i.product_name,
+              quantity: Number(i.quantity || 1),
+              unit_price: Number(i.unit_price || 0),
+              amount: Number(i.amount || (i.quantity * i.unit_price) || 0)
+            }));
+            const { error: riErr } = await supabase.from('receipt_items').insert(rows);
+            if (riErr) throw riErr;
+          }
+
+          const go = confirm('✅ Receipt ' + receiptNumber + ' created!\n\nOpen Smart Receipt now?');
+          if (go) window.location.href = 'receipt.html';
+        } catch (err) {
+          alert('Receipt error: ' + (err.message || err) + '\n\nMake sure receipts tables SQL is run in Supabase.');
+        }
+      };
+
       const sendPaymentReminder = (inv) => {
         if (!inv) return;
         const phone = (inv.customer_mobile || '').replace(/\D/g, '');
@@ -1199,7 +1260,8 @@ const { useState, useEffect, useCallback } = React;
                   {inv.status !== 'paid' && (
                     <div className="mt-2 flex gap-2">
                       <button onClick={(e) => { e.stopPropagation(); sendPaymentReminder(inv); }} className="flex-1 text-xs font-semibold text-amber-700 bg-amber-50 py-2 rounded-xl">Remind</button>
-                      <button onClick={(e) => { e.stopPropagation(); markAsPaid(inv); }} className="flex-1 text-xs font-semibold text-emerald-700 bg-emerald-50 py-2 rounded-xl">Mark Paid</button>
+                      {inv.status !== 'paid' && <button onClick={(e) => { e.stopPropagation(); markAsPaid(inv); }} className="flex-1 text-xs font-semibold text-emerald-700 bg-emerald-50 py-2 rounded-xl">Mark Paid</button>}
+                      {inv.status === 'paid' && <button onClick={(e) => { e.stopPropagation(); generateReceiptFromInvoice(inv); }} className="flex-1 text-xs font-semibold text-amber-800 bg-amber-50 py-2 rounded-xl">Receipt</button>}
                     </div>
                   )}
                 </div>
@@ -1454,6 +1516,9 @@ const { useState, useEffect, useCallback } = React;
                   <button onClick={() => sendPaymentReminder(lastInvoice)} className="w-full bg-amber-500 text-white font-semibold py-3 rounded-2xl text-sm">Payment Reminder · WhatsApp</button>
                   <button onClick={() => markAsPaid(lastInvoice)} className="w-full bg-brand-600 text-white font-semibold py-3 rounded-2xl text-sm">Mark as Paid</button>
                 </>
+              )}
+              {lastInvoice?.status === 'paid' && (
+                <button onClick={() => generateReceiptFromInvoice(lastInvoice)} className="w-full bg-amber-600 text-white font-semibold py-3 rounded-2xl text-sm">Generate Receipt</button>
               )}
               {business?.upi_id && (
                 <div className="bg-white border border-slate-200 rounded-2xl p-3">
