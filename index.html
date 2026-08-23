@@ -197,6 +197,17 @@ const { useState, useEffect, useCallback } = React;
 
       useEffect(() => { if (business) loadData(); }, [business, loadData]);
 
+      useEffect(() => {
+        if (screen !== 'preview' || !lastInvoice) return;
+        const el = document.getElementById('preview-barcode');
+        if (!el || typeof JsBarcode === 'undefined') return;
+        try {
+          JsBarcode(el, String(lastInvoice.invoice_number || 'INV'), {
+            format: 'CODE128', width: 1.6, height: 48, displayValue: true, fontSize: 12, margin: 8, background: '#ffffff'
+          });
+        } catch (e) {}
+      }, [screen, lastInvoice]);
+
       const startNewInvoice = () => { setSelectedCustomer(null); setItems([]); setDiscount(0); setLastInvoice(null); setScreen('create'); };
 
       const addItem = (product) => {
@@ -1383,16 +1394,6 @@ const { useState, useEffect, useCallback } = React;
 
 
 
-      useEffect(() => {
-        if (screen !== 'preview' || !lastInvoice) return;
-        const el = document.getElementById('preview-barcode');
-        if (!el || typeof JsBarcode === 'undefined') return;
-        try {
-          JsBarcode(el, String(lastInvoice.invoice_number || 'INV'), {
-            format: 'CODE128', width: 1.6, height: 48, displayValue: true, fontSize: 12, margin: 8, background: '#ffffff'
-          });
-        } catch (e) {}
-      }, [screen, lastInvoice]);
 
       return (
         <div className="max-w-md mx-auto bg-slate-50 min-h-screen relative">
