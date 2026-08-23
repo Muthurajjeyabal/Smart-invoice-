@@ -97,13 +97,19 @@ const { useState, useEffect, useCallback } = React;
       const [savingProfile, setSavingProfile] = useState(false);
       const [invoiceTemplate, setInvoiceTemplate] = useState(() => localStorage.getItem('si_template') || 'modern');
       const templates = [
-        { id: 'modern', name: 'Modern', color: '#4f46e5' },
-        { id: 'minimal', name: 'Minimal', color: '#0f172a' },
-        { id: 'corporate', name: 'Corporate', color: '#1e3a5f' },
-        { id: 'gst', name: 'GST Pro', color: '#047857' },
-        { id: 'elegant', name: 'Elegant', color: '#7c3aed' },
+        { id: 'modern', name: 'Modern', color: '#4f46e5', accent: '#eef2ff', style: 'bold' },
+        { id: 'minimal', name: 'Minimal', color: '#0f172a', accent: '#f8fafc', style: 'clean' },
+        { id: 'corporate', name: 'Corporate', color: '#1e3a5f', accent: '#e8eef5', style: 'formal' },
+        { id: 'gst', name: 'GST Pro', color: '#047857', accent: '#ecfdf5', style: 'formal' },
+        { id: 'elegant', name: 'Elegant', color: '#7c3aed', accent: '#f5f3ff', style: 'soft' },
+        { id: 'sapphire', name: 'Sapphire', color: '#0369a1', accent: '#e0f2fe', style: 'bold' },
+        { id: 'ember', name: 'Ember', color: '#c2410c', accent: '#fff7ed', style: 'bold' },
+        { id: 'luxe', name: 'Luxe Gold', color: '#a16207', accent: '#fefce8', style: 'luxe' },
+        { id: 'pearl', name: 'Pearl', color: '#57534e', accent: '#fafaf9', style: 'soft' },
+        { id: 'midnight', name: 'Midnight', color: '#1e1b4b', accent: '#eef2ff', style: 'dark' },
       ];
       const templateColor = (templates.find(t => t.id === invoiceTemplate) || templates[0]).color;
+      const templateMeta = templates.find(t => t.id === invoiceTemplate) || templates[0];
       const setTemplate = (id) => { setInvoiceTemplate(id); localStorage.setItem('si_template', id); };
 
       const subtotal = items.reduce((s, i) => s + (i.price * i.qty), 0);
@@ -565,23 +571,30 @@ const { useState, useEffect, useCallback } = React;
         const invNo = String(inv.invoice_number || 'INV');
         const w = window.open('', '_blank');
         let html = '<!DOCTYPE html><html><head><title>' + invNo + '</title><style>';
-        html += 'body{font-family:system-ui,sans-serif;padding:28px;color:#111;max-width:640px;margin:0 auto}';
-        html += '.head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;border-bottom:3px solid ' + color + ';padding-bottom:16px}';
-        html += '.logo{max-height:64px;max-width:120px;object-fit:contain} h1{font-size:22px;margin:0;color:' + color + '}';
-        html += '.muted{color:#666;font-size:12px;line-height:1.4} table{width:100%;border-collapse:collapse;margin:16px 0}';
+        const accent = (templateMeta && templateMeta.accent) || '#f8fafc';
+        const isDark = templateMeta && templateMeta.style === 'dark';
+        html += 'body{font-family:system-ui,sans-serif;padding:0;color:#111;max-width:640px;margin:0 auto;background:#fff}';
+        html += '.wrap{padding:28px}';
+        html += '.banner{background:' + (isDark ? color : accent) + ';padding:20px 28px;margin:0}';
+        html += '.head{display:flex;justify-content:space-between;align-items:flex-start}';
+        html += '.logo{max-height:64px;max-width:120px;object-fit:contain} h1{font-size:22px;margin:0;color:' + (isDark ? '#fff' : color) + '}';
+        html += '.muted{color:' + (isDark ? 'rgba(255,255,255,0.7)' : '#666') + ';font-size:12px;line-height:1.4}';
+        html += 'table{width:100%;border-collapse:collapse;margin:16px 0}';
         html += 'td{padding:8px 0;font-size:14px;border-bottom:1px solid #eee} .total{font-size:20px;font-weight:700;color:' + color + '}';
         html += '.badge{display:inline-block;padding:4px 10px;border-radius:6px;background:' + color + ';color:#fff;font-size:11px;font-weight:600}';
-        html += '.bar{text-align:center;margin-top:20px} @media print{button{display:none}}</style></head><body>';
-        html += '<div class="head"><div style="display:flex;gap:12px;align-items:center">';
+        html += '.bar{text-align:center;margin-top:20px} .line{height:3px;background:' + color + ';margin:0}';
+        html += '@media print{button{display:none}}</style></head><body>';
+        html += '<div class="banner"><div class="head"><div style="display:flex;gap:12px;align-items:center">';
         if (logo) html += '<img class="logo" src="' + logo + '" />';
         html += '<div><h1>' + (business?.name || 'Invoice') + '</h1>';
         html += '<p class="muted">' + (business?.address || '') + '<br>' + (business?.phone || '');
         if (business?.gstin) html += '<br>GSTIN: ' + business.gstin;
         html += '</p></div></div>';
         html += '<div style="text-align:right"><span class="badge">' + String(inv.status || 'pending').toUpperCase() + '</span>';
-        html += '<p style="margin:8px 0 0;font-weight:700;font-size:16px">' + invNo + '</p>';
-        html += '<p class="muted">' + (inv.invoice_date || '') + '</p></div></div>';
-        html += '<p><strong>Bill To:</strong> ' + (inv.customer_name || '') + '<br><span class="muted">' + (inv.customer_mobile || '') + '</span></p>';
+        html += '<p style="margin:8px 0 0;font-weight:700;font-size:16px;color:' + (isDark ? '#fff' : '#111') + '">' + invNo + '</p>';
+        html += '<p class="muted">' + (inv.invoice_date || '') + '</p></div></div></div>';
+        html += '<div class="line"></div><div class="wrap">';
+        html += '<p><strong>Bill To:</strong> ' + (inv.customer_name || '') + '<br><span style="color:#666;font-size:12px">' + (inv.customer_mobile || '') + '</span></p>';
         html += '<table>';
         html += '<tr><td>Subtotal</td><td style="text-align:right">₹' + Number(inv.subtotal||0).toFixed(2) + '</td></tr>';
         if (Number(inv.discount) > 0) html += '<tr><td>Discount</td><td style="text-align:right">−₹' + Number(inv.discount).toFixed(2) + '</td></tr>';
@@ -590,7 +603,7 @@ const { useState, useEffect, useCallback } = React;
         html += '<tr><td class="total">TOTAL</td><td class="total" style="text-align:right">₹' + Number(inv.total||0).toFixed(2) + '</td></tr></table>';
         if (business?.upi_id) html += '<p class="muted">UPI: <strong>' + business.upi_id + '</strong></p>';
         html += '<div class="bar"><svg id="bc"></svg><p class="muted">' + invNo + '</p></div>';
-        html += '<p class="muted" style="margin-top:16px">Thank you for your business!</p>';
+        html += '<p style="color:#666;font-size:12px;margin-top:16px">Thank you for your business!</p></div>';
         html += '<button onclick="window.print()" style="margin-top:16px;padding:12px 24px;background:' + color + ';color:#fff;border:none;border-radius:8px;font-weight:600">Print / Save as PDF</button>';
         html += '<scr' + 'ipt src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></scr' + 'ipt>';
         html += '<scr' + 'ipt>try{JsBarcode("#bc","' + invNo.replace(/"/g,'') + '",{format:"CODE128",width:1.5,height:40,displayValue:false,margin:0})}catch(e){}setTimeout(function(){window.print()},500);</scr' + 'ipt>';
@@ -1309,37 +1322,68 @@ const { useState, useEffect, useCallback } = React;
 
 
       const Templates = () => (
-        <div className="pb-24 min-h-screen">
+        <div className="pb-24 min-h-screen bg-slate-50">
           <div className="bg-white px-5 pt-12 pb-4 sticky top-0 z-10 border-b border-slate-100">
             <div className="flex items-center gap-3">
               <button onClick={() => setScreen('more')} className="p-1 -ml-1 text-slate-600"><IconBack /></button>
               <h1 className="text-xl font-bold">Invoice Templates</h1>
             </div>
+            <p className="text-sm text-slate-500 mt-1">Tap to select · live preview below</p>
           </div>
-          <div className="p-4 space-y-3">
-            <p className="text-sm text-slate-500 px-1">Choose a style for PDF / print invoices. Barcode is included on every template.</p>
-            {templates.map(t => (
-              <button key={t.id} onClick={() => setTemplate(t.id)}
-                className={'w-full text-left rounded-2xl overflow-hidden border-2 transition ' + (invoiceTemplate === t.id ? 'border-brand-600 shadow-soft' : 'border-transparent shadow-card')}>
-                <div className="h-3" style={{ background: t.color }}></div>
-                <div className="bg-white p-4 flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-sm" style={{ background: t.color }}>
-                    {t.name.slice(0, 2).toUpperCase()}
+          <div className="p-4 space-y-4">
+            {templates.map(t => {
+              const selected = invoiceTemplate === t.id;
+              return (
+                <button key={t.id} onClick={() => setTemplate(t.id)}
+                  className={'w-full text-left rounded-2xl overflow-hidden border-2 transition active:scale-[0.99] ' + (selected ? 'border-brand-600 shadow-soft ring-2 ring-brand-100' : 'border-slate-100 shadow-card')}>
+                  {/* Mini invoice preview */}
+                  <div className="bg-white">
+                    <div className="px-4 pt-4 pb-3" style={{ background: t.style === 'dark' ? t.color : t.accent }}>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: t.style === 'dark' ? 'rgba(255,255,255,0.7)' : t.color }}>Invoice</p>
+                          <p className="text-sm font-bold mt-0.5" style={{ color: t.style === 'dark' ? '#fff' : '#0f172a' }}>INV-1024</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs font-bold" style={{ color: t.style === 'dark' ? '#fff' : t.color }}>{business?.name || 'Your Business'}</p>
+                          <p className="text-[10px] mt-0.5" style={{ color: t.style === 'dark' ? 'rgba(255,255,255,0.6)' : '#94a3b8' }}>GSTIN · UPI</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="px-4 py-3">
+                      <div className="flex justify-between text-[11px] mb-1.5">
+                        <span className="text-slate-500">Bill To</span>
+                        <span className="font-medium text-slate-800">Rajesh Kumar</span>
+                      </div>
+                      <div className="flex justify-between text-[11px] mb-1.5">
+                        <span className="text-slate-500">Items</span>
+                        <span className="text-slate-700">2 products</span>
+                      </div>
+                      <div className="h-px bg-slate-100 my-2"></div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[11px] font-semibold text-slate-600">TOTAL</span>
+                        <span className="text-sm font-bold" style={{ color: t.color }}>₹2,360</span>
+                      </div>
+                      <div className="mt-2 flex justify-center">
+                        <div className="h-6 w-28 rounded-sm opacity-40" style={{ background: 'repeating-linear-gradient(90deg,' + t.color + ' 0, ' + t.color + ' 2px, transparent 2px, transparent 4px)' }}></div>
+                      </div>
+                    </div>
+                    <div className="px-4 py-2.5 border-t border-slate-50 flex items-center justify-between" style={{ background: selected ? t.accent : '#fff' }}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ background: t.color }}></div>
+                        <span className="text-sm font-semibold text-slate-900">{t.name}</span>
+                      </div>
+                      {selected ? (
+                        <span className="text-[10px] font-bold text-white px-2.5 py-1 rounded-full" style={{ background: t.color }}>Selected</span>
+                      ) : (
+                        <span className="text-[10px] font-medium text-slate-400">Tap to use</span>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-slate-900">{t.name}</p>
-                    <p className="text-xs text-slate-400">{t.color}</p>
-                  </div>
-                  {invoiceTemplate === t.id && (
-                    <span className="text-xs font-semibold text-brand-600 bg-brand-50 px-2 py-1 rounded-lg">Selected</span>
-                  )}
-                </div>
-              </button>
-            ))}
-            <div className="bg-slate-50 rounded-2xl p-4 mt-2">
-              <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Preview barcode</p>
-              <p className="text-sm text-slate-600">Every printed PDF includes a CODE128 barcode of the invoice number for easy scanning.</p>
-            </div>
+                </button>
+              );
+            })}
+            <p className="text-center text-xs text-slate-400 pb-4">Barcode included on every PDF · {templates.length} premium styles</p>
           </div>
         </div>
       );
