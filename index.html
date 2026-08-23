@@ -95,18 +95,13 @@ const { useState, useEffect, useCallback } = React;
       const [newCustomer, setNewCustomer] = useState({ name: '', mobile: '', email: '', gstin: '', billing_address: '' });
       const [profileForm, setProfileForm] = useState(null);
       const [savingProfile, setSavingProfile] = useState(false);
-      const [invoiceTemplate, setInvoiceTemplate] = useState(() => localStorage.getItem('si_template') || 'modern');
+      const [invoiceTemplate, setInvoiceTemplate] = useState(() => localStorage.getItem('si_template') || 'classic');
       const templates = [
-        { id: 'modern', name: 'Modern', color: '#4f46e5', accent: '#eef2ff', style: 'bold' },
-        { id: 'minimal', name: 'Minimal', color: '#0f172a', accent: '#f8fafc', style: 'clean' },
-        { id: 'corporate', name: 'Corporate', color: '#1e3a5f', accent: '#e8eef5', style: 'formal' },
-        { id: 'gst', name: 'GST Pro', color: '#047857', accent: '#ecfdf5', style: 'formal' },
-        { id: 'elegant', name: 'Elegant', color: '#7c3aed', accent: '#f5f3ff', style: 'soft' },
-        { id: 'sapphire', name: 'Sapphire', color: '#0369a1', accent: '#e0f2fe', style: 'bold' },
-        { id: 'ember', name: 'Ember', color: '#c2410c', accent: '#fff7ed', style: 'bold' },
-        { id: 'luxe', name: 'Luxe Gold', color: '#a16207', accent: '#fefce8', style: 'luxe' },
-        { id: 'pearl', name: 'Pearl', color: '#57534e', accent: '#fafaf9', style: 'soft' },
-        { id: 'midnight', name: 'Midnight', color: '#1e1b4b', accent: '#eef2ff', style: 'dark' },
+        { id: 'classic', name: 'Classic', color: '#4f46e5', desc: 'Header top · amounts right' },
+        { id: 'sidebar', name: 'Sidebar', color: '#0f172a', desc: 'Left strip · content right' },
+        { id: 'card', name: 'Card', color: '#047857', desc: 'Centered card · soft frame' },
+        { id: 'table', name: 'GST Table', color: '#1e3a5f', desc: 'Full tax table layout' },
+        { id: 'compact', name: 'Compact', color: '#7c3aed', desc: 'Dense · thermal style' },
       ];
       const templateColor = (templates.find(t => t.id === invoiceTemplate) || templates[0]).color;
       const templateMeta = templates.find(t => t.id === invoiceTemplate) || templates[0];
@@ -567,47 +562,129 @@ const { useState, useEffect, useCallback } = React;
       const printInvoice = (inv) => {
         if (!inv) return;
         const color = templateColor;
+        const layout = (templateMeta && templateMeta.id) || 'classic';
         const logo = business?.logo_url || '';
         const invNo = String(inv.invoice_number || 'INV');
+        const bName = business?.name || 'Invoice';
+        const bAddr = business?.address || '';
+        const bPhone = business?.phone || '';
+        const bGst = business?.gstin || '';
+        const bUpi = business?.upi_id || '';
+        const cName = inv.customer_name || '';
+        const cMobile = inv.customer_mobile || '';
+        const sub = Number(inv.subtotal || 0).toFixed(2);
+        const disc = Number(inv.discount || 0).toFixed(2);
+        const cgst = Number(inv.cgst || 0).toFixed(2);
+        const sgst = Number(inv.sgst || 0).toFixed(2);
+        const tot = Number(inv.total || 0).toFixed(2);
+        const status = String(inv.status || 'pending').toUpperCase();
+        const date = inv.invoice_date || '';
         const w = window.open('', '_blank');
-        let html = '<!DOCTYPE html><html><head><title>' + invNo + '</title><style>';
-        const accent = (templateMeta && templateMeta.accent) || '#f8fafc';
-        const isDark = templateMeta && templateMeta.style === 'dark';
-        html += 'body{font-family:system-ui,sans-serif;padding:0;color:#111;max-width:640px;margin:0 auto;background:#fff}';
-        html += '.wrap{padding:28px}';
-        html += '.banner{background:' + (isDark ? color : accent) + ';padding:20px 28px;margin:0}';
-        html += '.head{display:flex;justify-content:space-between;align-items:flex-start}';
-        html += '.logo{max-height:64px;max-width:120px;object-fit:contain} h1{font-size:22px;margin:0;color:' + (isDark ? '#fff' : color) + '}';
-        html += '.muted{color:' + (isDark ? 'rgba(255,255,255,0.7)' : '#666') + ';font-size:12px;line-height:1.4}';
-        html += 'table{width:100%;border-collapse:collapse;margin:16px 0}';
-        html += 'td{padding:8px 0;font-size:14px;border-bottom:1px solid #eee} .total{font-size:20px;font-weight:700;color:' + color + '}';
-        html += '.badge{display:inline-block;padding:4px 10px;border-radius:6px;background:' + color + ';color:#fff;font-size:11px;font-weight:600}';
-        html += '.bar{text-align:center;margin-top:20px} .line{height:3px;background:' + color + ';margin:0}';
-        html += '@media print{button{display:none}}</style></head><body>';
-        html += '<div class="banner"><div class="head"><div style="display:flex;gap:12px;align-items:center">';
-        if (logo) html += '<img class="logo" src="' + logo + '" />';
-        html += '<div><h1>' + (business?.name || 'Invoice') + '</h1>';
-        html += '<p class="muted">' + (business?.address || '') + '<br>' + (business?.phone || '');
-        if (business?.gstin) html += '<br>GSTIN: ' + business.gstin;
-        html += '</p></div></div>';
-        html += '<div style="text-align:right"><span class="badge">' + String(inv.status || 'pending').toUpperCase() + '</span>';
-        html += '<p style="margin:8px 0 0;font-weight:700;font-size:16px;color:' + (isDark ? '#fff' : '#111') + '">' + invNo + '</p>';
-        html += '<p class="muted">' + (inv.invoice_date || '') + '</p></div></div></div>';
-        html += '<div class="line"></div><div class="wrap">';
-        html += '<p><strong>Bill To:</strong> ' + (inv.customer_name || '') + '<br><span style="color:#666;font-size:12px">' + (inv.customer_mobile || '') + '</span></p>';
-        html += '<table>';
-        html += '<tr><td>Subtotal</td><td style="text-align:right">₹' + Number(inv.subtotal||0).toFixed(2) + '</td></tr>';
-        if (Number(inv.discount) > 0) html += '<tr><td>Discount</td><td style="text-align:right">−₹' + Number(inv.discount).toFixed(2) + '</td></tr>';
-        html += '<tr><td>CGST</td><td style="text-align:right">₹' + Number(inv.cgst||0).toFixed(2) + '</td></tr>';
-        html += '<tr><td>SGST</td><td style="text-align:right">₹' + Number(inv.sgst||0).toFixed(2) + '</td></tr>';
-        html += '<tr><td class="total">TOTAL</td><td class="total" style="text-align:right">₹' + Number(inv.total||0).toFixed(2) + '</td></tr></table>';
-        if (business?.upi_id) html += '<p class="muted">UPI: <strong>' + business.upi_id + '</strong></p>';
-        html += '<div class="bar"><svg id="bc"></svg><p class="muted">' + invNo + '</p></div>';
-        html += '<p style="color:#666;font-size:12px;margin-top:16px">Thank you for your business!</p></div>';
-        html += '<button onclick="window.print()" style="margin-top:16px;padding:12px 24px;background:' + color + ';color:#fff;border:none;border-radius:8px;font-weight:600">Print / Save as PDF</button>';
-        html += '<scr' + 'ipt src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></scr' + 'ipt>';
-        html += '<scr' + 'ipt>try{JsBarcode("#bc","' + invNo.replace(/"/g,'') + '",{format:"CODE128",width:1.5,height:40,displayValue:false,margin:0})}catch(e){}setTimeout(function(){window.print()},500);</scr' + 'ipt>';
-        html += '</body></html>';
+        let body = '';
+
+        if (layout === 'sidebar') {
+          body = '<div style="display:flex;min-height:100vh;font-family:system-ui,sans-serif">'
+            + '<div style="width:110px;background:' + color + ';color:#fff;padding:28px 14px;flex-shrink:0">'
+            + '<div style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:18px;font-weight:800;letter-spacing:2px">' + bName + '</div>'
+            + '<p style="font-size:10px;opacity:0.8;margin-top:40px;writing-mode:vertical-rl;transform:rotate(180deg)">' + invNo + '</p></div>'
+            + '<div style="flex:1;padding:28px">'
+            + '<div style="display:flex;justify-content:space-between;margin-bottom:20px"><div><p style="font-size:11px;color:#666">BILL TO</p><p style="font-weight:700;font-size:16px;margin:4px 0">' + cName + '</p><p style="font-size:12px;color:#666">' + cMobile + '</p></div>'
+            + '<div style="text-align:right"><span style="background:' + color + ';color:#fff;padding:3px 10px;border-radius:4px;font-size:10px;font-weight:600">' + status + '</span><p style="font-weight:700;margin:6px 0 0">' + invNo + '</p><p style="font-size:12px;color:#666">' + date + '</p></div></div>'
+            + '<table style="width:100%;border-collapse:collapse;font-size:13px">'
+            + '<tr><td style="padding:8px 0;border-bottom:1px solid #eee">Subtotal</td><td style="text-align:right">₹' + sub + '</td></tr>'
+            + (Number(disc) > 0 ? '<tr><td style="padding:8px 0;border-bottom:1px solid #eee">Discount</td><td style="text-align:right">−₹' + disc + '</td></tr>' : '')
+            + '<tr><td style="padding:8px 0;border-bottom:1px solid #eee">CGST</td><td style="text-align:right">₹' + cgst + '</td></tr>'
+            + '<tr><td style="padding:8px 0;border-bottom:1px solid #eee">SGST</td><td style="text-align:right">₹' + sgst + '</td></tr>'
+            + '<tr><td style="padding:12px 0;font-weight:800;font-size:18px;color:' + color + '">TOTAL</td><td style="text-align:right;font-weight:800;font-size:18px;color:' + color + '">₹' + tot + '</td></tr></table>'
+            + (bUpi ? '<p style="font-size:12px;color:#666;margin-top:16px">UPI: <b>' + bUpi + '</b></p>' : '')
+            + '<div style="text-align:center;margin-top:24px"><svg id="bc"></svg></div>'
+            + '<p style="font-size:11px;color:#999;margin-top:12px">' + bPhone + (bGst ? ' · GSTIN ' + bGst : '') + '</p></div></div>';
+        } else if (layout === 'card') {
+          body = '<div style="font-family:system-ui,sans-serif;background:#f1f5f9;padding:24px;min-height:100vh">'
+            + '<div style="max-width:480px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.08)">'
+            + '<div style="background:' + color + ';color:#fff;padding:24px;text-align:center">'
+            + '<p style="font-size:11px;opacity:0.8;letter-spacing:2px;margin:0">INVOICE</p>'
+            + '<p style="font-size:22px;font-weight:800;margin:8px 0 0">' + invNo + '</p>'
+            + '<p style="font-size:13px;opacity:0.9;margin:4px 0 0">' + date + '</p></div>'
+            + '<div style="padding:24px">'
+            + '<div style="display:flex;justify-content:space-between;margin-bottom:20px">'
+            + '<div><p style="font-size:10px;color:#94a3b8;margin:0">FROM</p><p style="font-weight:700;margin:4px 0">' + bName + '</p><p style="font-size:11px;color:#64748b">' + bPhone + '</p></div>'
+            + '<div style="text-align:right"><p style="font-size:10px;color:#94a3b8;margin:0">TO</p><p style="font-weight:700;margin:4px 0">' + cName + '</p><p style="font-size:11px;color:#64748b">' + cMobile + '</p></div></div>'
+            + '<div style="background:#f8fafc;border-radius:12px;padding:16px">'
+            + '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px"><span style="color:#64748b">Subtotal</span><span>₹' + sub + '</span></div>'
+            + '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px"><span style="color:#64748b">Tax</span><span>₹' + (Number(cgst)+Number(sgst)).toFixed(2) + '</span></div>'
+            + '<div style="border-top:1px dashed #e2e8f0;margin:12px 0"></div>'
+            + '<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700">TOTAL</span><span style="font-size:22px;font-weight:800;color:' + color + '">₹' + tot + '</span></div></div>'
+            + '<div style="text-align:center;margin-top:20px"><svg id="bc"></svg></div>'
+            + (bUpi ? '<p style="text-align:center;font-size:12px;color:#64748b;margin-top:8px">Pay: ' + bUpi + '</p>' : '')
+            + '</div></div></div>';
+        } else if (layout === 'table') {
+          body = '<div style="font-family:system-ui,sans-serif;padding:28px;max-width:640px;margin:0 auto">'
+            + '<table style="width:100%;margin-bottom:16px"><tr>'
+            + '<td><h1 style="margin:0;font-size:20px;color:' + color + '">' + bName + '</h1>'
+            + '<p style="margin:4px 0;font-size:11px;color:#666">' + bAddr + '<br>' + bPhone + (bGst ? '<br>GSTIN: ' + bGst : '') + '</p></td>'
+            + '<td style="text-align:right;vertical-align:top"><p style="margin:0;font-size:18px;font-weight:800">TAX INVOICE</p>'
+            + '<p style="margin:4px 0;font-size:13px"><b>' + invNo + '</b> · ' + date + '</p>'
+            + '<span style="background:' + color + ';color:#fff;padding:2px 8px;border-radius:4px;font-size:10px">' + status + '</span></td></tr></table>'
+            + '<div style="background:#f8fafc;border:1px solid #e2e8f0;padding:12px 16px;margin-bottom:16px;border-radius:6px">'
+            + '<p style="margin:0;font-size:11px;color:#64748b">Bill To / Consignee</p>'
+            + '<p style="margin:4px 0 0;font-weight:700">' + cName + ' <span style="font-weight:400;color:#666">' + cMobile + '</span></p></div>'
+            + '<table style="width:100%;border-collapse:collapse;font-size:12px;border:1px solid #cbd5e1">'
+            + '<tr style="background:' + color + ';color:#fff"><th style="padding:8px;text-align:left">Description</th><th style="padding:8px;text-align:right">Amount</th></tr>'
+            + '<tr><td style="padding:8px;border-bottom:1px solid #e2e8f0">Taxable Value</td><td style="padding:8px;text-align:right;border-bottom:1px solid #e2e8f0">₹' + sub + '</td></tr>'
+            + (Number(disc) > 0 ? '<tr><td style="padding:8px;border-bottom:1px solid #e2e8f0">Less: Discount</td><td style="padding:8px;text-align:right;border-bottom:1px solid #e2e8f0">−₹' + disc + '</td></tr>' : '')
+            + '<tr><td style="padding:8px;border-bottom:1px solid #e2e8f0">CGST @ 9%</td><td style="padding:8px;text-align:right;border-bottom:1px solid #e2e8f0">₹' + cgst + '</td></tr>'
+            + '<tr><td style="padding:8px;border-bottom:1px solid #e2e8f0">SGST @ 9%</td><td style="padding:8px;text-align:right;border-bottom:1px solid #e2e8f0">₹' + sgst + '</td></tr>'
+            + '<tr style="background:#f1f5f9"><td style="padding:10px;font-weight:800">Grand Total</td><td style="padding:10px;text-align:right;font-weight:800;font-size:16px;color:' + color + '">₹' + tot + '</td></tr></table>'
+            + (bUpi ? '<p style="font-size:12px;margin-top:12px">UPI: <b>' + bUpi + '</b></p>' : '')
+            + '<div style="text-align:center;margin-top:20px"><svg id="bc"></svg><p style="font-size:10px;color:#999">' + invNo + '</p></div>'
+            + '<p style="font-size:10px;color:#999;margin-top:16px;border-top:1px solid #e2e8f0;padding-top:8px">This is a computer generated invoice.</p></div>';
+        } else if (layout === 'compact') {
+          body = '<div style="font-family:ui-monospace,monospace;padding:16px;max-width:320px;margin:0 auto;font-size:12px">'
+            + '<div style="text-align:center;border-bottom:2px dashed #ccc;padding-bottom:12px;margin-bottom:12px">'
+            + '<p style="margin:0;font-weight:800;font-size:14px">' + bName + '</p>'
+            + '<p style="margin:4px 0;font-size:10px;color:#666">' + bPhone + (bGst ? ' | ' + bGst : '') + '</p>'
+            + '<p style="margin:8px 0 0;font-weight:700">' + invNo + '</p><p style="margin:2px 0;font-size:10px">' + date + '</p></div>'
+            + '<p style="margin:0 0 8px"><b>To:</b> ' + cName + (cMobile ? ' (' + cMobile + ')' : '') + '</p>'
+            + '<div style="border-top:1px dashed #ccc;border-bottom:1px dashed #ccc;padding:8px 0;margin:8px 0">'
+            + '<div style="display:flex;justify-content:space-between"><span>Subtotal</span><span>₹' + sub + '</span></div>'
+            + '<div style="display:flex;justify-content:space-between"><span>CGST</span><span>₹' + cgst + '</span></div>'
+            + '<div style="display:flex;justify-content:space-between"><span>SGST</span><span>₹' + sgst + '</span></div></div>'
+            + '<div style="display:flex;justify-content:space-between;font-weight:800;font-size:14px;margin:8px 0"><span>TOTAL</span><span>₹' + tot + '</span></div>'
+            + '<div style="text-align:center;margin-top:12px"><svg id="bc"></svg></div>'
+            + (bUpi ? '<p style="text-align:center;font-size:10px;margin-top:8px">UPI: ' + bUpi + '</p>' : '')
+            + '<p style="text-align:center;font-size:10px;color:#999;margin-top:12px;border-top:2px dashed #ccc;padding-top:8px">*** Thank You ***</p></div>';
+        } else {
+          /* classic */
+          body = '<div style="font-family:system-ui,sans-serif;padding:0;max-width:640px;margin:0 auto">'
+            + '<div style="background:' + color + ';color:#fff;padding:24px 28px;display:flex;justify-content:space-between;align-items:flex-start">'
+            + '<div><p style="margin:0;font-size:11px;opacity:0.8;letter-spacing:1px">INVOICE</p>'
+            + '<p style="margin:6px 0 0;font-size:22px;font-weight:800">' + invNo + '</p></div>'
+            + '<div style="text-align:right"><p style="margin:0;font-weight:700;font-size:16px">' + bName + '</p>'
+            + '<p style="margin:4px 0 0;font-size:11px;opacity:0.85">' + bPhone + (bGst ? '<br>' + bGst : '') + '</p></div></div>'
+            + '<div style="padding:28px">'
+            + '<div style="display:flex;justify-content:space-between;margin-bottom:24px">'
+            + '<div><p style="margin:0;font-size:11px;color:#94a3b8">BILL TO</p><p style="margin:4px 0 0;font-weight:700;font-size:15px">' + cName + '</p><p style="margin:2px 0;font-size:12px;color:#666">' + cMobile + '</p></div>'
+            + '<div style="text-align:right"><span style="background:' + color + ';color:#fff;padding:3px 10px;border-radius:6px;font-size:10px;font-weight:600">' + status + '</span>'
+            + '<p style="margin:6px 0 0;font-size:12px;color:#666">' + date + '</p></div></div>'
+            + '<table style="width:100%;border-collapse:collapse;font-size:14px">'
+            + '<tr><td style="padding:10px 0;border-bottom:1px solid #f1f5f9;color:#64748b">Subtotal</td><td style="text-align:right;border-bottom:1px solid #f1f5f9">₹' + sub + '</td></tr>'
+            + (Number(disc) > 0 ? '<tr><td style="padding:10px 0;border-bottom:1px solid #f1f5f9;color:#64748b">Discount</td><td style="text-align:right;border-bottom:1px solid #f1f5f9;color:#e11d48">−₹' + disc + '</td></tr>' : '')
+            + '<tr><td style="padding:10px 0;border-bottom:1px solid #f1f5f9;color:#64748b">CGST 9%</td><td style="text-align:right;border-bottom:1px solid #f1f5f9">₹' + cgst + '</td></tr>'
+            + '<tr><td style="padding:10px 0;border-bottom:1px solid #f1f5f9;color:#64748b">SGST 9%</td><td style="text-align:right;border-bottom:1px solid #f1f5f9">₹' + sgst + '</td></tr>'
+            + '<tr><td style="padding:14px 0;font-weight:800;font-size:16px">TOTAL</td><td style="text-align:right;font-weight:800;font-size:20px;color:' + color + '">₹' + tot + '</td></tr></table>'
+            + (bUpi ? '<p style="font-size:12px;color:#666;margin-top:16px">UPI: <b>' + bUpi + '</b></p>' : '')
+            + '<div style="text-align:center;margin-top:28px"><svg id="bc"></svg><p style="font-size:11px;color:#94a3b8">' + invNo + '</p></div>'
+            + '<p style="font-size:12px;color:#94a3b8;margin-top:20px">Thank you for your business!</p></div></div>';
+        }
+
+        let html = '<!DOCTYPE html><html><head><title>' + invNo + '</title><meta charset="utf-8">'
+          + '<style>body{margin:0;background:#fff}@media print{button{display:none!important}}</style></head><body>'
+          + body
+          + '<div style="padding:16px;text-align:center"><button onclick="window.print()" style="padding:12px 24px;background:' + color + ';color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer">Print / Save as PDF</button></div>'
+          + '<scr' + 'ipt src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></scr' + 'ipt>'
+          + '<scr' + 'ipt>try{JsBarcode("#bc","' + invNo.replace(/"/g,'') + '",{format:"CODE128",width:1.4,height:36,displayValue:false,margin:0})}catch(e){}setTimeout(function(){window.print()},500);</scr' + 'ipt>'
+          + '</body></html>';
         w.document.write(html);
         w.document.close();
       };
@@ -1328,62 +1405,93 @@ const { useState, useEffect, useCallback } = React;
               <button onClick={() => setScreen('more')} className="p-1 -ml-1 text-slate-600"><IconBack /></button>
               <h1 className="text-xl font-bold">Invoice Templates</h1>
             </div>
-            <p className="text-sm text-slate-500 mt-1">Tap to select · live preview below</p>
+            <p className="text-sm text-slate-500 mt-1">5 different layouts · not just colour</p>
           </div>
           <div className="p-4 space-y-4">
             {templates.map(t => {
               const selected = invoiceTemplate === t.id;
               return (
                 <button key={t.id} onClick={() => setTemplate(t.id)}
-                  className={'w-full text-left rounded-2xl overflow-hidden border-2 transition active:scale-[0.99] ' + (selected ? 'border-brand-600 shadow-soft ring-2 ring-brand-100' : 'border-slate-100 shadow-card')}>
-                  {/* Mini invoice preview */}
-                  <div className="bg-white">
-                    <div className="px-4 pt-4 pb-3" style={{ background: t.style === 'dark' ? t.color : t.accent }}>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: t.style === 'dark' ? 'rgba(255,255,255,0.7)' : t.color }}>Invoice</p>
-                          <p className="text-sm font-bold mt-0.5" style={{ color: t.style === 'dark' ? '#fff' : '#0f172a' }}>INV-1024</p>
+                  className={'w-full text-left rounded-2xl overflow-hidden border-2 transition ' + (selected ? 'border-brand-600 shadow-soft ring-2 ring-brand-100' : 'border-slate-100 shadow-card')}>
+                  <div className="bg-white p-3">
+                    {/* Structural mini preview */}
+                    {t.id === 'classic' && (
+                      <div className="rounded-xl overflow-hidden border border-slate-100 text-[9px]">
+                        <div className="flex justify-between text-white p-2" style={{ background: t.color }}>
+                          <div><div className="opacity-70">INVOICE</div><div className="font-bold text-[11px]">INV-1024</div></div>
+                          <div className="text-right font-bold">{business?.name || 'Shop'}</div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-xs font-bold" style={{ color: t.style === 'dark' ? '#fff' : t.color }}>{business?.name || 'Your Business'}</p>
-                          <p className="text-[10px] mt-0.5" style={{ color: t.style === 'dark' ? 'rgba(255,255,255,0.6)' : '#94a3b8' }}>GSTIN · UPI</p>
+                        <div className="p-2 space-y-1">
+                          <div className="flex justify-between"><span className="text-slate-400">Bill To</span><span className="font-medium">Customer</span></div>
+                          <div className="flex justify-between"><span className="text-slate-400">Subtotal</span><span>₹2,000</span></div>
+                          <div className="flex justify-between font-bold" style={{ color: t.color }}><span>TOTAL</span><span>₹2,360</span></div>
                         </div>
                       </div>
-                    </div>
-                    <div className="px-4 py-3">
-                      <div className="flex justify-between text-[11px] mb-1.5">
-                        <span className="text-slate-500">Bill To</span>
-                        <span className="font-medium text-slate-800">Rajesh Kumar</span>
+                    )}
+                    {t.id === 'sidebar' && (
+                      <div className="rounded-xl overflow-hidden border border-slate-100 text-[9px] flex h-24">
+                        <div className="w-8 flex items-center justify-center text-white font-bold" style={{ background: t.color, writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontSize: 10 }}>{business?.name || 'Shop'}</div>
+                        <div className="flex-1 p-2 space-y-1">
+                          <div className="font-bold text-[10px]">INV-1024</div>
+                          <div className="text-slate-400">Customer · items</div>
+                          <div className="font-bold" style={{ color: t.color }}>₹2,360</div>
+                        </div>
                       </div>
-                      <div className="flex justify-between text-[11px] mb-1.5">
-                        <span className="text-slate-500">Items</span>
-                        <span className="text-slate-700">2 products</span>
+                    )}
+                    {t.id === 'card' && (
+                      <div className="rounded-xl bg-slate-100 p-2">
+                        <div className="bg-white rounded-lg overflow-hidden text-[9px] shadow-sm">
+                          <div className="text-white text-center p-2" style={{ background: t.color }}>
+                            <div className="opacity-80 tracking-widest">INVOICE</div>
+                            <div className="font-bold text-[11px]">INV-1024</div>
+                          </div>
+                          <div className="p-2 text-center">
+                            <div className="text-slate-400">From → To</div>
+                            <div className="font-bold text-[12px] mt-1" style={{ color: t.color }}>₹2,360</div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="h-px bg-slate-100 my-2"></div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[11px] font-semibold text-slate-600">TOTAL</span>
-                        <span className="text-sm font-bold" style={{ color: t.color }}>₹2,360</span>
+                    )}
+                    {t.id === 'table' && (
+                      <div className="rounded-xl overflow-hidden border border-slate-200 text-[9px]">
+                        <div className="flex justify-between p-2 border-b">
+                          <span className="font-bold" style={{ color: t.color }}>{business?.name || 'Shop'}</span>
+                          <span className="font-bold">TAX INVOICE</span>
+                        </div>
+                        <div className="bg-slate-50 px-2 py-1 text-slate-500">Bill To: Customer</div>
+                        <div className="text-white px-2 py-1 flex justify-between" style={{ background: t.color }}><span>Description</span><span>Amount</span></div>
+                        <div className="px-2 py-1 flex justify-between border-b"><span>CGST / SGST</span><span>₹360</span></div>
+                        <div className="px-2 py-1 flex justify-between font-bold"><span>Grand Total</span><span style={{ color: t.color }}>₹2,360</span></div>
                       </div>
-                      <div className="mt-2 flex justify-center">
-                        <div className="h-6 w-28 rounded-sm opacity-40" style={{ background: 'repeating-linear-gradient(90deg,' + t.color + ' 0, ' + t.color + ' 2px, transparent 2px, transparent 4px)' }}></div>
+                    )}
+                    {t.id === 'compact' && (
+                      <div className="rounded-xl border border-dashed border-slate-300 p-2 text-[9px] font-mono max-w-[200px] mx-auto text-center">
+                        <div className="font-bold border-b border-dashed pb-1 mb-1">{business?.name || 'Shop'}</div>
+                        <div>INV-1024 · today</div>
+                        <div className="my-1">Customer Name</div>
+                        <div className="border-y border-dashed py-1 my-1 space-y-0.5">
+                          <div className="flex justify-between"><span>Sub</span><span>₹2000</span></div>
+                          <div className="flex justify-between"><span>Tax</span><span>₹360</span></div>
+                        </div>
+                        <div className="font-bold flex justify-between"><span>TOTAL</span><span>₹2360</span></div>
+                        <div className="text-slate-400 mt-1">*** Thank You ***</div>
                       </div>
-                    </div>
-                    <div className="px-4 py-2.5 border-t border-slate-50 flex items-center justify-between" style={{ background: selected ? t.accent : '#fff' }}>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full" style={{ background: t.color }}></div>
-                        <span className="text-sm font-semibold text-slate-900">{t.name}</span>
+                    )}
+                    <div className="flex items-center justify-between mt-3 px-1">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">{t.name}</p>
+                        <p className="text-[11px] text-slate-400">{t.desc}</p>
                       </div>
                       {selected ? (
                         <span className="text-[10px] font-bold text-white px-2.5 py-1 rounded-full" style={{ background: t.color }}>Selected</span>
                       ) : (
-                        <span className="text-[10px] font-medium text-slate-400">Tap to use</span>
+                        <span className="text-[10px] text-slate-400">Tap to use</span>
                       )}
                     </div>
                   </div>
                 </button>
               );
             })}
-            <p className="text-center text-xs text-slate-400 pb-4">Barcode included on every PDF · {templates.length} premium styles</p>
           </div>
         </div>
       );
