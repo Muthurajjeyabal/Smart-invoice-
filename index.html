@@ -2233,6 +2233,22 @@ const { useState, useEffect, useCallback } = React;
                 <div className={'w-6 h-6 rounded-full bg-white shadow transition ' + (darkMode ? 'translate-x-5' : '')}></div>
               </div>
             </button>
+            <a href="quotation.html" className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
+              <div className="w-11 h-11 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600 font-bold text-sm">SQ</div>
+              <div className="flex-1">
+                <p className="font-semibold text-slate-900">Smart Quotation</p>
+                <p className="text-sm text-slate-500">Switch to quotation app</p>
+              </div>
+              <span className="text-slate-400">→</span>
+            </a>
+            <a href="suite.html" className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
+              <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-xs">JMR</div>
+              <div className="flex-1">
+                <p className="font-semibold text-slate-900">Suite Home</p>
+                <p className="text-sm text-slate-500">All apps in one place</p>
+              </div>
+              <span className="text-slate-400">→</span>
+            </a>
             {!staffUser && (
             <button onClick={openProfile} className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
               <div className="flex-1">

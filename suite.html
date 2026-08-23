@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="JMR Suite" />
+  <title>JMR Business Suite</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: Inter, system-ui, sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-950 min-h-screen text-white">
+  <div class="max-w-md mx-auto min-h-screen px-5 py-12 flex flex-col">
+    <div class="text-center mb-10">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-teal-500 shadow-lg shadow-indigo-500/20 mb-4">
+        <span class="text-2xl font-extrabold tracking-tight">JMR</span>
+      </div>
+      <h1 class="text-2xl font-bold tracking-tight">JMR Business Suite</h1>
+      <p class="text-slate-400 text-sm mt-1">Quotation → Invoice → Get Paid</p>
+    </div>
+
+    <div class="space-y-4 flex-1">
+      <!-- Smart Quotation -->
+      <a href="quotation.html" class="block group">
+        <div class="rounded-2xl p-5 bg-slate-900 border border-slate-800 hover:border-teal-500/50 transition shadow-lg">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-teal-500/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition">
+              <span class="text-teal-400 font-extrabold text-lg">SQ</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <h2 class="font-bold text-lg text-white">Smart Quotation</h2>
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300">TEAL</span>
+              </div>
+              <p class="text-slate-400 text-sm mt-1 leading-relaxed">Create quotes · WhatsApp · Follow-up · Convert to Invoice</p>
+              <p class="text-teal-400/80 text-xs font-medium mt-3">Open app →</p>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- Smart Invoice -->
+      <a href="index.html" class="block group">
+        <div class="rounded-2xl p-5 bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition shadow-lg">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-indigo-500/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition">
+              <span class="text-indigo-400 font-extrabold text-lg">SI</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <h2 class="font-bold text-lg text-white">Smart Invoice</h2>
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300">PURPLE</span>
+              </div>
+              <p class="text-slate-400 text-sm mt-1 leading-relaxed">Create invoices · POS · UPI · Payment tracking · GST</p>
+              <p class="text-indigo-400/80 text-xs font-medium mt-3">Open app →</p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="mt-10 text-center">
+      <p class="text-slate-600 text-xs">Same login · Shared customers & products</p>
+      <p class="text-slate-700 text-[11px] mt-1">Create. Send. Track. Convert. Get Paid.</p>
+    </div>
+  </div>
+</body>
+</html>
