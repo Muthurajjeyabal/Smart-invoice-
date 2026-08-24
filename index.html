@@ -8,28 +8,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="JMR Suite" />
   <link rel="apple-touch-icon" href="icon-192.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
-  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+  <link rel="icon" type="image/png" href="icon-192.png" />
   <title>JMR Business Suite</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'] }
-        }
-      }
-    }
-  </script>
   <style>
-    html, body { height: 100%; }
-    body {
-      font-family: Inter, system-ui, -apple-system, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-      background: #020617;
-    }
-    /* Safe area for notched phones */
+    body { font-family: Inter, system-ui, sans-serif; background: #020617; -webkit-tap-highlight-color: transparent; }
     .safe-pad {
       padding-top: max(2.5rem, env(safe-area-inset-top));
       padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
@@ -41,124 +25,170 @@
 </head>
 <body class="min-h-screen text-white antialiased">
   <div class="min-h-screen flex flex-col safe-pad">
-    <div class="w-full max-w-lg md:max-w-3xl lg:max-w-4xl mx-auto flex flex-col flex-1 px-1 sm:px-2">
-
-      <!-- Header -->
-      <header class="text-center pt-4 sm:pt-8 md:pt-12 pb-6 sm:pb-8">
-        <div class="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-indigo-500 via-violet-500 to-teal-400 shadow-xl shadow-indigo-500/25 mb-3 sm:mb-4">
-          <span class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight">JMR</span>
+    <div class="w-full max-w-lg md:max-w-3xl mx-auto flex flex-col flex-1 px-2">
+      <header class="text-center pt-6 sm:pt-10 pb-4">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-teal-400 shadow-xl mb-3">
+          <span class="text-2xl font-extrabold">JMR</span>
         </div>
-        <h1 class="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">JMR Business Suite</h1>
-        <p class="text-slate-400 text-xs sm:text-sm mt-1.5 sm:mt-2">Quotation → Invoice → Get Paid</p>
+        <h1 id="title" class="text-2xl font-bold">JMR Business Suite</h1>
+        <p id="tagline" class="text-slate-400 text-sm mt-1.5">Quote → Invoice → Receipt · Expense → Profit</p>
       </header>
 
-      <!-- App cards: stack on mobile, 2-col on md+ -->
-      <main class="flex-1 flex flex-col justify-center">
-        <div class="grid grid-cols-1 grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-5">
+      <div class="mb-5 px-1">
+        <label id="langLabel" class="block text-xs text-slate-500 font-semibold text-center mb-1.5">Language / भाषा / மொழி</label>
+        <select id="langSelect" class="w-full max-w-xs mx-auto block bg-slate-900 border border-slate-700 text-white text-sm rounded-xl px-3 py-2.5 outline-none">
+          <option value="en">English</option>
+          <option value="hi">हिन्दी · Hindi</option>
+          <option value="ta">தமிழ் · Tamil</option>
+          <option value="te">తెలుగు · Telugu</option>
+          <option value="kn">ಕನ್ನಡ · Kannada</option>
+          <option value="ml">മലയാളം · Malayalam</option>
+          <option value="bn">বাংলা · Bengali</option>
+          <option value="mr">मराठी · Marathi</option>
+          <option value="gu">ગુજરાતી · Gujarati</option>
+          <option value="pa">ਪੰਜਾਬੀ · Punjabi</option>
+        </select>
+      </div>
 
-          <!-- Smart Quotation -->
-          <a href="quotation.html" class="block group card-press transition duration-150">
-            <div class="h-full rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 bg-slate-900/90 border border-slate-800 hover:border-teal-500/60 hover:bg-slate-900 active:border-teal-500/40 transition shadow-lg shadow-black/20">
-              <div class="flex md:flex-col items-start gap-3 sm:gap-4">
-                <div class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-teal-500/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition duration-200">
-                  <span class="text-teal-400 font-extrabold text-base sm:text-lg md:text-xl">SQ</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <h2 class="font-bold text-base sm:text-lg md:text-xl text-white">Smart Quotation</h2>
-                    <span class="text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300">TEAL</span>
-                  </div>
-                  <p class="text-slate-400 text-xs sm:text-sm mt-1 sm:mt-1.5 leading-relaxed">
-                    Quotes · WhatsApp · Follow-up · Convert
-                  </p>
-                  <p class="text-teal-400/90 text-xs font-semibold mt-2.5 sm:mt-3 md:mt-4 group-hover:translate-x-0.5 transition inline-block">
-                    Open app →
-                  </p>
+      <main class="flex-1">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <a href="quotation.html" class="block card-press">
+            <div class="rounded-2xl p-4 sm:p-5 bg-slate-900 border border-slate-800 hover:border-teal-500/50 transition">
+              <div class="flex gap-3 items-start">
+                <div class="w-12 h-12 rounded-xl bg-teal-500/15 flex items-center justify-center shrink-0"><span class="text-teal-400 font-extrabold">SQ</span></div>
+                <div>
+                  <h2 id="sqTitle" class="font-bold text-white">Smart Quotation</h2>
+                  <p id="sqSub" class="text-slate-400 text-xs mt-1">Quotes · WhatsApp · Follow-up</p>
+                  <p id="sqOpen" class="text-teal-400 text-xs font-semibold mt-2">Open app →</p>
                 </div>
               </div>
             </div>
           </a>
-
-          <!-- Smart Invoice -->
-          <a href="invoice.html" class="block group card-press transition duration-150">
-            <div class="h-full rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 bg-slate-900/90 border border-slate-800 hover:border-indigo-500/60 hover:bg-slate-900 active:border-indigo-500/40 transition shadow-lg shadow-black/20">
-              <div class="flex md:flex-col items-start gap-3 sm:gap-4">
-                <div class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-indigo-500/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition duration-200">
-                  <span class="text-indigo-400 font-extrabold text-base sm:text-lg md:text-xl">SI</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <h2 class="font-bold text-base sm:text-lg md:text-xl text-white">Smart Invoice</h2>
-                    <span class="text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300">PURPLE</span>
-                  </div>
-                  <p class="text-slate-400 text-xs sm:text-sm mt-1 sm:mt-1.5 leading-relaxed">
-                    Invoices · POS · UPI · GST tracking
-                  </p>
-                  <p class="text-indigo-400/90 text-xs font-semibold mt-2.5 sm:mt-3 md:mt-4 group-hover:translate-x-0.5 transition inline-block">
-                    Open app →
-                  </p>
+          <a href="invoice.html" class="block card-press">
+            <div class="rounded-2xl p-4 sm:p-5 bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition">
+              <div class="flex gap-3 items-start">
+                <div class="w-12 h-12 rounded-xl bg-indigo-500/15 flex items-center justify-center shrink-0"><span class="text-indigo-400 font-extrabold">SI</span></div>
+                <div>
+                  <h2 id="siTitle" class="font-bold text-white">Smart Invoice</h2>
+                  <p id="siSub" class="text-slate-400 text-xs mt-1">Invoices · POS · UPI · GST</p>
+                  <p id="siOpen" class="text-indigo-400 text-xs font-semibold mt-2">Open app →</p>
                 </div>
               </div>
             </div>
           </a>
-
-          <!-- Smart Receipt -->
-          <a href="receipt.html" class="block group card-press transition duration-150">
-            <div class="h-full rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 bg-slate-900/90 border border-slate-800 hover:border-amber-500/60 hover:bg-slate-900 active:border-amber-500/40 transition shadow-lg shadow-black/20">
-              <div class="flex md:flex-col items-start gap-3 sm:gap-4">
-                <div class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-amber-500/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition duration-200">
-                  <span class="text-amber-400 font-extrabold text-base sm:text-lg md:text-xl">SR</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <h2 class="font-bold text-base sm:text-lg md:text-xl text-white">Smart Receipt</h2>
-                    <span class="text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">AMBER</span>
-                  </div>
-                  <p class="text-slate-400 text-xs sm:text-sm mt-1 sm:mt-1.5 leading-relaxed">
-                    Receipts · Print · WhatsApp share
-                  </p>
-                  <p class="text-amber-400/90 text-xs font-semibold mt-2.5 sm:mt-3 md:mt-4 group-hover:translate-x-0.5 transition inline-block">
-                    Open app →
-                  </p>
+          <a href="receipt.html" class="block card-press">
+            <div class="rounded-2xl p-4 sm:p-5 bg-slate-900 border border-slate-800 hover:border-amber-500/50 transition">
+              <div class="flex gap-3 items-start">
+                <div class="w-12 h-12 rounded-xl bg-amber-500/15 flex items-center justify-center shrink-0"><span class="text-amber-400 font-extrabold">SR</span></div>
+                <div>
+                  <h2 id="srTitle" class="font-bold text-white">Smart Receipt</h2>
+                  <p id="srSub" class="text-slate-400 text-xs mt-1">Receipts · Print · WhatsApp</p>
+                  <p id="srOpen" class="text-amber-400 text-xs font-semibold mt-2">Open app →</p>
                 </div>
               </div>
             </div>
           </a>
-
-
-          <!-- Smart Expense -->
-          <a href="expense.html" class="block group card-press transition duration-150">
-            <div class="h-full rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 bg-slate-900/90 border border-slate-800 hover:border-rose-500/60 hover:bg-slate-900 active:border-rose-500/40 transition shadow-lg shadow-black/20">
-              <div class="flex md:flex-col items-start gap-3 sm:gap-4">
-                <div class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-rose-500/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition duration-200">
-                  <span class="text-rose-400 font-extrabold text-base sm:text-lg md:text-xl">SE</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <h2 class="font-bold text-base sm:text-lg md:text-xl text-white">Smart Expense</h2>
-                    <span class="text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300">ROSE</span>
-                  </div>
-                  <p class="text-slate-400 text-xs sm:text-sm mt-1 sm:mt-1.5 leading-relaxed">
-                    Expenses · Categories · Profit
-                  </p>
-                  <p class="text-rose-400/90 text-xs font-semibold mt-2.5 sm:mt-3 md:mt-4 group-hover:translate-x-0.5 transition inline-block">
-                    Open app →
-                  </p>
+          <a href="expense.html" class="block card-press">
+            <div class="rounded-2xl p-4 sm:p-5 bg-slate-900 border border-slate-800 hover:border-rose-500/50 transition">
+              <div class="flex gap-3 items-start">
+                <div class="w-12 h-12 rounded-xl bg-rose-500/15 flex items-center justify-center shrink-0"><span class="text-rose-400 font-extrabold">SE</span></div>
+                <div>
+                  <h2 id="seTitle" class="font-bold text-white">Smart Expense</h2>
+                  <p id="seSub" class="text-slate-400 text-xs mt-1">Expenses · Profit</p>
+                  <p id="seOpen" class="text-rose-400 text-xs font-semibold mt-2">Open app →</p>
                 </div>
               </div>
             </div>
           </a>
-
         </div>
       </main>
 
-      <!-- Footer -->
-      <footer class="text-center pt-8 sm:pt-10 pb-2">
-        <p class="text-slate-500 text-[11px] sm:text-xs">Same login · Shared customers & products</p>
-        <p class="text-slate-600 text-[10px] sm:text-[11px] mt-1">Quote → Invoice → Receipt · Expense → Profit</p>
+      <footer class="text-center pt-8 pb-4">
+        <p id="footer1" class="text-slate-500 text-xs">Same login · Shared data</p>
+        <p id="footer2" class="text-slate-600 text-[11px] mt-1">Quote → Invoice → Receipt · Expense → Profit</p>
       </footer>
-
     </div>
   </div>
+  <script>
+    const I18N = {
+      en: { title:'JMR Business Suite', tagline:'Quote → Invoice → Receipt · Expense → Profit', lang:'Language',
+        sq:'Smart Quotation', sqSub:'Quotes · WhatsApp · Follow-up · Convert',
+        si:'Smart Invoice', siSub:'Invoices · POS · UPI · GST tracking',
+        sr:'Smart Receipt', srSub:'Receipts · Print · WhatsApp share',
+        se:'Smart Expense', seSub:'Expenses · Categories · Profit',
+        open:'Open app →', footer1:'Same login · Shared customers & products', footer2:'Quote → Invoice → Receipt · Expense → Profit' },
+      hi: { title:'JMR बिज़नेस सुइट', tagline:'कोट → इनवॉइस → रसीद · खर्च → लाभ', lang:'भाषा',
+        sq:'स्मार्ट कोटेशन', sqSub:'कोट · व्हाट्सऐप · फॉलो-अप · कन्वर्ट',
+        si:'स्मार्ट इनवॉइस', siSub:'इनवॉइस · POS · UPI · GST',
+        sr:'स्मार्ट रसीद', srSub:'रसीद · प्रिंट · व्हाट्सऐप',
+        se:'स्मार्ट खर्च', seSub:'खर्च · कैटेगरी · लाभ',
+        open:'ऐप खोलें →', footer1:'एक ही लॉगिन · साझा डेटा', footer2:'कोट → इनवॉइस → रसीद · खर्च → लाभ' },
+      ta: { title:'JMR பிசினஸ் சூட்', tagline:'மேற்கோள் → இன்வாய்ஸ் → ரசீது · செலவு → லாபம்', lang:'மொழி',
+        sq:'ஸ்மார்ட் மேற்கோள்', sqSub:'மேற்கோள் · வாட்ஸ்அப் · பின்தொடர் · மாற்று',
+        si:'ஸ்மார்ட் இன்வாய்ஸ்', siSub:'இன்வாய்ஸ் · POS · UPI · GST',
+        sr:'ஸ்மார்ட் ரசீது', srSub:'ரசீது · பிரிண்ட் · வாட்ஸ்அப்',
+        se:'ஸ்மார்ட் செலவு', seSub:'செலவு · வகை · லாபம்',
+        open:'ஆப் திற →', footer1:'ஒரே லாகின் · பகிரப்பட்ட தரவு', footer2:'மேற்கோள் → இன்வாய்ஸ் → ரசீது · செலவு → லாபம்' },
+      te: { title:'JMR బిజినెస్ సూట్', tagline:'కోట్ → ఇన్వాయిస్ → రసీదు · ఖర్చు → లాభం', lang:'భాష',
+        sq:'స్మార్ట్ కోటేషన్', sqSub:'కోట్ · వాట్సాప్ · ఫాలోఅప్ · కన్వర్ట్',
+        si:'స్మార్ట్ ఇన్వాయిస్', siSub:'ఇన్వాయిస్ · POS · UPI · GST',
+        sr:'స్మార్ట్ రసీదు', srSub:'రసీదు · ప్రింట్ · వాట్సాప్',
+        se:'స్మార్ట్ ఖర్చు', seSub:'ఖర్చు · కేటగిరీ · లాభం',
+        open:'యాప్ తెరువు →', footer1:'ఒకే లాగిన్ · షేర్డ్ డేటా', footer2:'కోట్ → ఇన్వాయిస్ → రసీదు · ఖర్చు → లాభం' },
+      kn: { title:'JMR ಬಿಸಿನೆಸ್ ಸ್ಯೂಟ್', tagline:'ಕೋಟ್ → ಇನ್‌ವಾಯ್ಸ್ → ರಸೀದಿ · ಖರ್ಚು → ಲಾಭ', lang:'ಭಾಷೆ',
+        sq:'ಸ್ಮಾರ್ಟ್ ಕೋಟೇಶನ್', sqSub:'ಕೋಟ್ · ವಾಟ್ಸಾಪ್ · ಫಾಲೋಅಪ್ · ಕನ್ವರ್ಟ್',
+        si:'ಸ್ಮಾರ್ಟ್ ಇನ್‌ವಾಯ್ಸ್', siSub:'ಇನ್‌ವಾಯ್ಸ್ · POS · UPI · GST',
+        sr:'ಸ್ಮಾರ್ಟ್ ರಸೀದಿ', srSub:'ರಸೀದಿ · ಪ್ರಿಂಟ್ · ವಾಟ್ಸಾಪ್',
+        se:'ಸ್ಮಾರ್ಟ್ ಖರ್ಚು', seSub:'ಖರ್ಚು · ವರ್ಗ · ಲಾಭ',
+        open:'ಅಪ್ ತೆರೆ →', footer1:'ಒಂದೇ ಲಾಗಿನ್ · ಹಂಚಿದ ಡೇಟಾ', footer2:'ಕೋಟ್ → ಇನ್‌ವಾಯ್ಸ್ → ರಸೀದಿ · ಖರ್ಚು → ಲಾಭ' },
+      ml: { title:'JMR ബിസിനസ് സ്യൂട്ട്', tagline:'കോട്ട് → ഇൻവോയ്സ് → രസീത് · ചെലവ് → ലാഭം', lang:'ഭാഷ',
+        sq:'സ്മാർട്ട് ക്വോട്ടേഷൻ', sqSub:'കോട്ട് · വാട്ട്സ്ആപ്പ് · ഫോളോഅപ്പ് · കൺവേർട്ട്',
+        si:'സ്മാർട്ട് ഇൻവോയ്സ്', siSub:'ഇൻവോയ്സ് · POS · UPI · GST',
+        sr:'സ്മാർട്ട് രസീത്', srSub:'രസീത് · പ്രിന്റ് · വാട്ട്സ്ആപ്പ്',
+        se:'സ്മാർട്ട് ചെലവ്', seSub:'ചെലവ് · വിഭാഗം · ലാഭം',
+        open:'ആപ്പ് തുറക്കുക →', footer1:'ഒരേ ലോഗിൻ · പങ്കിട്ട ഡാറ്റ', footer2:'കോട്ട് → ഇൻവോയ്സ് → രസീത് · ചെലവ് → ലാഭം' },
+      bn: { title:'JMR বিজনেস স্যুট', tagline:'কোট → ইনভয়েস → রসিদ · খরচ → লাভ', lang:'ভাষা',
+        sq:'স্মার্ট কোটেশন', sqSub:'কোট · হোয়াটসঅ্যাপ · ফলোআপ · কনভার্ট',
+        si:'স্মার্ট ইনভয়েস', siSub:'ইনভয়েস · POS · UPI · GST',
+        sr:'স্মার্ট রসিদ', srSub:'রসিদ · প্রিন্ট · হোয়াটসঅ্যাপ',
+        se:'স্মার্ট খরচ', seSub:'খরচ · ক্যাটাগরি · লাভ',
+        open:'অ্যাপ খুলুন →', footer1:'একই লগইন · শেয়ার করা ডেটা', footer2:'কোট → ইনভয়েস → রসিদ · খরচ → লাভ' },
+      mr: { title:'JMR बिझनेस सूट', tagline:'कोट → इनव्हॉइस → पावती · खर्च → नफा', lang:'भाषा',
+        sq:'स्मार्ट कोटेशन', sqSub:'कोट · व्हॉट्सअॅप · फॉलोअप · कन्व्हर्ट',
+        si:'स्मार्ट इनव्हॉइस', siSub:'इनव्हॉइस · POS · UPI · GST',
+        sr:'स्मार्ट पावती', srSub:'पावती · प्रिंट · व्हॉट्सअॅप',
+        se:'स्मार्ट खर्च', seSub:'खर्च · श्रेणी · नफा',
+        open:'अॅप उघडा →', footer1:'एकच लॉगिन · शेअर डेटा', footer2:'कोट → इनव्हॉइस → पावती · खर्च → नफा' },
+      gu: { title:'JMR બિઝનેસ સ્યુટ', tagline:'કોટ → ઇન્વૉઇસ → રસીદ · ખર્ચ → નફો', lang:'ભાષા',
+        sq:'સ્માર્ટ કોટેશન', sqSub:'કોટ · વોટ્સએપ · ફોલોઅપ · કન્વર્ટ',
+        si:'સ્માર્ટ ઇન્વૉઇસ', siSub:'ઇન્વૉઇસ · POS · UPI · GST',
+        sr:'સ્માર્ટ રસીદ', srSub:'રસીદ · પ્રિન્ટ · વોટ્સએપ',
+        se:'સ્માર્ટ ખર્ચ', seSub:'ખર્ચ · કેટેગરી · નફો',
+        open:'એપ ખોલો →', footer1:'એક જ લૉગિન · શેર્ડ ડેટા', footer2:'કોટ → ઇન્વૉઇસ → રસીદ · ખર્ચ → નફો' },
+      pa: { title:'JMR ਬਿਜ਼ਨਸ ਸੂਟ', tagline:'ਕੋਟ → ਇਨਵੌਇਸ → ਰਸੀਦ · ਖਰਚ → ਲਾਭ', lang:'ਭਾਸ਼ਾ',
+        sq:'ਸਮਾਰਟ ਕੋਟੇਸ਼ਨ', sqSub:'ਕੋਟ · ਵਟਸਐਪ · ਫਾਲੋਅੱਪ · ਕਨਵਰਟ',
+        si:'ਸਮਾਰਟ ਇਨਵੌਇਸ', siSub:'ਇਨਵੌਇਸ · POS · UPI · GST',
+        sr:'ਸਮਾਰਟ ਰਸੀਦ', srSub:'ਰਸੀਦ · ਪ੍ਰਿੰਟ · ਵਟਸਐਪ',
+        se:'ਸਮਾਰਟ ਖਰਚ', seSub:'ਖਰਚ · ਸ਼੍ਰੇਣੀ · ਲਾਭ',
+        open:'ਐਪ ਖੋਲ੍ਹੋ →', footer1:'ਇੱਕੋ ਲਾਗਇਨ · ਸਾਂਝਾ ਡਾਟਾ', footer2:'ਕੋਟ → ਇਨਵੌਇਸ → ਰਸੀਦ · ਖਰਚ → ਲਾਭ' }
+    };
+    function applyLang(code) {
+      const L = I18N[code] || I18N.en;
+      const map = { title:'title', tagline:'tagline', langLabel:'lang',
+        sqTitle:'sq', sqSub:'sqSub', sqOpen:'open', siTitle:'si', siSub:'siSub', siOpen:'open',
+        srTitle:'sr', srSub:'srSub', srOpen:'open', seTitle:'se', seSub:'seSub', seOpen:'open',
+        footer1:'footer1', footer2:'footer2' };
+      Object.keys(map).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = L[map[id]];
+      });
+      document.documentElement.lang = code;
+      localStorage.setItem('jmr_lang', code);
+    }
+    const saved = localStorage.getItem('jmr_lang') || 'en';
+    document.getElementById('langSelect').value = saved;
+    applyLang(saved);
+    document.getElementById('langSelect').addEventListener('change', function(){ applyLang(this.value); });
+  </script>
 </body>
 </html>
