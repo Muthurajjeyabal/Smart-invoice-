@@ -94,6 +94,25 @@
       return false;
     };
 const { useState, useEffect, useCallback } = React;
+
+
+    const I18N = {
+      en: { login:'Login', username:'Username', pin:'PIN', dashboard:'Dashboard', more:'More', darkMode:'Dark Mode', darkOn:'On', darkOff:'Off', suiteHome:'Suite Home', business:'Business', owner:'Owner', staff:'Staff', refresh:'Refresh', save:'Save', cancel:'Cancel', delete:'Delete', addExpense:'Add Expense', saveExpense:'Save Expense', category:'Category', amount:'Amount (₹)', date:'Date', note:'Note', paymentMode:'Payment mode', monthProfit:'This month profit', monthSales:'Month sales (paid)', monthExpenses:'Month expenses', byCategory:'By category · this month', recentExpenses:'Recent expenses', noExpenses:'No expenses yet', firstExpense:'+ Add first expense', salesMinusExp:'Sales − Expenses = Profit', createQuotation:'Create Quotation', createInvoice:'Create Invoice', createReceipt:'Create Receipt', convertToInvoice:'Convert to Invoice', generateReceipt:'Generate Receipt', markPaid:'Mark as Paid', whatsapp:'WhatsApp', downloadPdf:'Download PDF', language:'Language', smartQuotation:'Smart Quotation', smartInvoice:'Smart Invoice', smartReceipt:'Smart Receipt', smartExpense:'Smart Expense', taglineQ:'Create. Send. Track. Convert.', taglineI:'Create. Send. Get Paid.', taglineR:'Paid. Receipt. Share.', taglineE:'Track. Spend. Profit.', customers:'Customers', products:'Products', pending:'Pending', todaySales:"Today's Sales", invoices:'Invoices', recentInvoices:'Recent Invoices', noInvoices:'No invoices yet', settings:'Settings' },
+      hi: { login:'लॉगिन', username:'यूज़रनेम', pin:'पिन', dashboard:'डैशबोर्ड', more:'और', darkMode:'डार्क मोड', darkOn:'चालू', darkOff:'बंद', suiteHome:'सुइट होम', business:'बिज़नेस', owner:'मालिक', staff:'स्टाफ', refresh:'रिफ्रेश', save:'सेव', cancel:'रद्द', delete:'डिलीट', addExpense:'खर्च जोड़ें', saveExpense:'खर्च सेव', category:'कैटेगरी', amount:'राशि (₹)', date:'तारीख', note:'नोट', paymentMode:'भुगतान', monthProfit:'इस महीने का लाभ', monthSales:'महीने की बिक्री', monthExpenses:'महीने का खर्च', byCategory:'कैटेगरी', recentExpenses:'हाल के खर्च', noExpenses:'खर्च नहीं', firstExpense:'+ पहला खर्च', salesMinusExp:'बिक्री − खर्च = लाभ', createQuotation:'कोटेशन', createInvoice:'इनवॉइस', createReceipt:'रसीद', convertToInvoice:'इनवॉइस में बदलें', generateReceipt:'रसीद', markPaid:'पेड', whatsapp:'व्हाट्सऐप', downloadPdf:'PDF', language:'भाषा', smartQuotation:'स्मार्ट कोटेशन', smartInvoice:'स्मार्ट इनवॉइस', smartReceipt:'स्मार्ट रसीद', smartExpense:'स्मार्ट खर्च', taglineQ:'बनाएँ. भेजें. ट्रैक.', taglineI:'बनाएँ. भेजें. भुगतान.', taglineR:'पेड. रसीद. शेयर.', taglineE:'ट्रैक. खर्च. लाभ.', customers:'ग्राहक', products:'प्रोडक्ट', pending:'बकाया', todaySales:'आज की बिक्री', invoices:'इनवॉइस', recentInvoices:'हाल के', noInvoices:'कोई नहीं', settings:'सेटिंग्स' },
+      ta: { login:'உள்நுழை', username:'பயனர்', pin:'பின்', dashboard:'டாஷ்போர்டு', more:'மேலும்', darkMode:'டார்க் மோடு', darkOn:'ஆன்', darkOff:'ஆஃப்', suiteHome:'சூட் முகப்பு', business:'வணிகம்', owner:'உரிமையாளர்', staff:'ஊழியர்', refresh:'புதுப்பி', save:'சேமி', cancel:'ரத்து', delete:'நீக்கு', addExpense:'செலவு சேர்', saveExpense:'செலவு சேமி', category:'வகை', amount:'தொகை (₹)', date:'தேதி', note:'குறிப்பு', paymentMode:'பணம் முறை', monthProfit:'இந்த மாத லாபம்', monthSales:'மாத விற்பனை', monthExpenses:'மாத செலவு', byCategory:'வகை வாரியாக', recentExpenses:'சமீபத்திய செலவுகள்', noExpenses:'செலவு இல்லை', firstExpense:'+ முதல் செலவு', salesMinusExp:'விற்பனை − செலவு = லாபம்', createQuotation:'மேற்கோள்', createInvoice:'இன்வாய்ஸ்', createReceipt:'ரசீது', convertToInvoice:'இன்வாய்ஸாக மாற்று', generateReceipt:'ரசீது', markPaid:'பணம் பெற்றது', whatsapp:'வாட்ஸ்அப்', downloadPdf:'PDF', language:'மொழி', smartQuotation:'ஸ்மார்ட் மேற்கோள்', smartInvoice:'ஸ்மார்ட் இன்வாய்ஸ்', smartReceipt:'ஸ்மார்ட் ரசீது', smartExpense:'ஸ்மார்ட் செலவு', taglineQ:'உருவாக்கு. அனுப்பு. கண்காணி.', taglineI:'உருவாக்கு. அனுப்பு. பணம் பெறு.', taglineR:'பணம். ரசீது. பகிர்.', taglineE:'கண்காணி. செலவு. லாபம்.', customers:'வாடிக்கையாளர்', products:'பொருள்', pending:'நிலுவை', todaySales:'இன்றைய விற்பனை', invoices:'இன்வாய்ஸ்', recentInvoices:'சமீபத்திய', noInvoices:'இல்லை', settings:'அமைப்புகள்' },
+      te: { login:'లాగిన్', username:'యూజర్', pin:'పిన్', dashboard:'డాష్‌బోర్డ్', more:'మరిన్ని', darkMode:'డార్క్ మోడ్', darkOn:'ఆన్', darkOff:'ఆఫ్', suiteHome:'సూట్', business:'వ్యాపారం', owner:'యజమాని', staff:'స్టాఫ్', refresh:'రిఫ్రెష్', save:'సేవ్', cancel:'రద్దు', delete:'తొలగించు', addExpense:'ఖర్చు', saveExpense:'సేవ్', category:'కేటగిరీ', amount:'మొత్తం (₹)', date:'తేదీ', note:'నోట్', paymentMode:'చెల్లింపు', monthProfit:'ఈ నెల లాభం', monthSales:'నెల అమ్మకాలు', monthExpenses:'నెల ఖర్చు', byCategory:'కేటగిరీ', recentExpenses:'ఖర్చులు', noExpenses:'లేవు', firstExpense:'+ ఖర్చు', salesMinusExp:'అమ్మకాలు − ఖర్చు = లాభం', createQuotation:'కోటేషన్', createInvoice:'ఇన్వాయిస్', createReceipt:'రసీదు', convertToInvoice:'కన్వర్ట్', generateReceipt:'రసీదు', markPaid:'పెయిడ్', whatsapp:'వాట్సాప్', downloadPdf:'PDF', language:'భాష', smartQuotation:'స్మార్ట్ కోటేషన్', smartInvoice:'స్మార్ట్ ఇన్వాయిస్', smartReceipt:'స్మార్ట్ రసీదు', smartExpense:'స్మార్ట్ ఖర్చు', taglineQ:'Create. Send. Track.', taglineI:'Create. Send. Get Paid.', taglineR:'Paid. Receipt. Share.', taglineE:'Track. Spend. Profit.', customers:'కస్టమర్', products:'ప్రొడక్ట్', pending:'పెండింగ్', todaySales:'నేటి అమ్మకాలు', invoices:'ఇన్వాయిస్', recentInvoices:'ఇటీవలి', noInvoices:'లేవు', settings:'సెట్టింగ్' },
+      kn: { login:'ಲಾಗಿನ್', username:'ಬಳಕೆದಾರ', pin:'ಪಿನ್', dashboard:'ಡ್ಯಾಶ್‌ಬೋರ್ಡ್', more:'ಇನ್ನಷ್ಟು', darkMode:'ಡಾರ್ಕ್ ಮೋಡ್', darkOn:'ಆನ್', darkOff:'ಆಫ್', suiteHome:'ಸ್ಯೂಟ್', business:'ವ್ಯಾಪಾರ', owner:'ಮಾಲೀಕ', staff:'ಸ್ಟಾಫ್', refresh:'ರಿಫ್ರೆಶ್', save:'ಉಳಿಸಿ', cancel:'ರದ್ದು', delete:'ಅಳಿಸಿ', addExpense:'ಖರ್ಚು', saveExpense:'ಉಳಿಸಿ', category:'ವರ್ಗ', amount:'ಮೊತ್ತ (₹)', date:'ದಿನಾಂಕ', note:'ಟಿಪ್ಪಣಿ', paymentMode:'ಪಾವತಿ', monthProfit:'ಈ ತಿಂಗಳ ಲಾಭ', monthSales:'ತಿಂಗಳ ಮಾರಾಟ', monthExpenses:'ತಿಂಗಳ ಖರ್ಚು', byCategory:'ವರ್ಗ', recentExpenses:'ಖರ್ಚು', noExpenses:'ಇಲ್ಲ', firstExpense:'+ ಖರ್ಚು', salesMinusExp:'ಮಾರಾಟ − ಖರ್ಚು = ಲಾಭ', createQuotation:'ಕೋಟೇಶನ್', createInvoice:'ಇನ್‌ವಾಯ್ಸ್', createReceipt:'ರಸೀದಿ', convertToInvoice:'ಕನ್ವರ್ಟ್', generateReceipt:'ರಸೀದಿ', markPaid:'ಪಾವತಿ', whatsapp:'ವಾಟ್ಸಾಪ್', downloadPdf:'PDF', language:'ಭಾಷೆ', smartQuotation:'ಸ್ಮಾರ್ಟ್ ಕೋಟೇಶನ್', smartInvoice:'ಸ್ಮಾರ್ಟ್ ಇನ್‌ವಾಯ್ಸ್', smartReceipt:'ಸ್ಮಾರ್ಟ್ ರಸೀದಿ', smartExpense:'ಸ್ಮಾರ್ಟ್ ಖರ್ಚು', taglineQ:'Create. Send. Track.', taglineI:'Create. Send. Get Paid.', taglineR:'Paid. Receipt. Share.', taglineE:'Track. Spend. Profit.', customers:'ಗ್ರಾಹಕ', products:'ಉತ್ಪನ್ನ', pending:'ಬಾಕಿ', todaySales:'ಇಂದಿನ ಮಾರಾಟ', invoices:'ಇನ್‌ವಾಯ್ಸ್', recentInvoices:'ಇತ್ತೀಚಿನ', noInvoices:'ಇಲ್ಲ', settings:'ಸೆಟ್ಟಿಂಗ್' },
+      ml: { login:'ലോഗിൻ', username:'ഉപയോക്താവ്', pin:'പിൻ', dashboard:'ഡാഷ്‌ബോർഡ്', more:'കൂടുതൽ', darkMode:'ഡാർക്ക് മോഡ്', darkOn:'ഓൺ', darkOff:'ഓഫ്', suiteHome:'സ്യൂട്ട്', business:'ബിസിനസ്', owner:'ഉടമ', staff:'സ്റ്റാഫ്', refresh:'റിഫ്രഷ്', save:'സേവ്', cancel:'റദ്ദ്', delete:'ഇല്ലാതാക്കുക', addExpense:'ചെലവ്', saveExpense:'സേവ്', category:'വിഭാഗം', amount:'തുക (₹)', date:'തീയതി', note:'കുറിപ്പ്', paymentMode:'പേയ്‌മെന്റ്', monthProfit:'ഈ മാസത്തെ ലാഭം', monthSales:'മാസ വിൽപ്പന', monthExpenses:'മാസ ചെലവ്', byCategory:'വിഭാഗം', recentExpenses:'ചെലവുകൾ', noExpenses:'ഇല്ല', firstExpense:'+ ചെലവ്', salesMinusExp:'വിൽപ്പന − ചെലവ് = ലാഭം', createQuotation:'ക്വോട്ടേഷൻ', createInvoice:'ഇൻവോയ്സ്', createReceipt:'രസീത്', convertToInvoice:'കൺവേർട്ട്', generateReceipt:'രസീത്', markPaid:'പണമടച്ചു', whatsapp:'വാട്ട്സ്ആപ്പ്', downloadPdf:'PDF', language:'ഭാഷ', smartQuotation:'സ്മാർട്ട് ക്വോട്ടേഷൻ', smartInvoice:'സ്മാർട്ട് ഇൻവോയ്സ്', smartReceipt:'സ്മാർട്ട് രസീത്', smartExpense:'സ്മാർട്ട് ചെലവ്', taglineQ:'Create. Send. Track.', taglineI:'Create. Send. Get Paid.', taglineR:'Paid. Receipt. Share.', taglineE:'Track. Spend. Profit.', customers:'ഉപഭോക്താവ്', products:'ഉൽപ്പന്നം', pending:'ബാക്കി', todaySales:'ഇന്നത്തെ വിൽപ്പന', invoices:'ഇൻവോയ്സ്', recentInvoices:'സമീപകാല', noInvoices:'ഇല്ല', settings:'സെറ്റിംഗ്' },
+      bn: { login:'লগইন', username:'ইউজার', pin:'পিন', dashboard:'ড্যাশবোর্ড', more:'আরও', darkMode:'ডার্ক মোড', darkOn:'চালু', darkOff:'বন্ধ', suiteHome:'স্যুট', business:'ব্যবসা', owner:'মালিক', staff:'স্টাফ', refresh:'রিফ্রেশ', save:'সেভ', cancel:'বাতিল', delete:'মুছুন', addExpense:'খরচ', saveExpense:'সেভ', category:'ক্যাটাগরি', amount:'পরিমাণ (₹)', date:'তারিখ', note:'নোট', paymentMode:'পেমেন্ট', monthProfit:'এই মাসের লাভ', monthSales:'মাসের বিক্রি', monthExpenses:'মাসের খরচ', byCategory:'ক্যাটাগরি', recentExpenses:'খরচ', noExpenses:'নেই', firstExpense:'+ খরচ', salesMinusExp:'বিক্রি − খরচ = লাভ', createQuotation:'কোটেশন', createInvoice:'ইনভয়েস', createReceipt:'রসিদ', convertToInvoice:'কনভার্ট', generateReceipt:'রসিদ', markPaid:'পেড', whatsapp:'হোয়াটসঅ্যাপ', downloadPdf:'PDF', language:'ভাষা', smartQuotation:'স্মার্ট কোটেশন', smartInvoice:'স্মার্ট ইনভয়েস', smartReceipt:'স্মার্ট রসিদ', smartExpense:'স্মার্ট খরচ', taglineQ:'Create. Send. Track.', taglineI:'Create. Send. Get Paid.', taglineR:'Paid. Receipt. Share.', taglineE:'Track. Spend. Profit.', customers:'গ্রাহক', products:'পণ্য', pending:'বাকি', todaySales:'আজকের বিক্রি', invoices:'ইনভয়েস', recentInvoices:'সাম্প্রতিক', noInvoices:'নেই', settings:'সেটিংস' },
+      mr: { login:'लॉगिन', username:'युजर', pin:'पिन', dashboard:'डॅशबोर्ड', more:'अधिक', darkMode:'डार्क मोड', darkOn:'चालू', darkOff:'बंद', suiteHome:'सूट', business:'व्यवसाय', owner:'मालक', staff:'स्टाफ', refresh:'रिफ्रेश', save:'सेव्ह', cancel:'रद्द', delete:'हटवा', addExpense:'खर्च', saveExpense:'सेव्ह', category:'श्रेणी', amount:'रक्कम (₹)', date:'तारीख', note:'नोंद', paymentMode:'पेमेंट', monthProfit:'या महिन्याचा नफा', monthSales:'महिन्याची विक्री', monthExpenses:'महिन्याचा खर्च', byCategory:'श्रेणी', recentExpenses:'खर्च', noExpenses:'नाही', firstExpense:'+ खर्च', salesMinusExp:'विक्री − खर्च = नफा', createQuotation:'कोटेशन', createInvoice:'इनव्हॉइस', createReceipt:'पावती', convertToInvoice:'कन्व्हर्ट', generateReceipt:'पावती', markPaid:'पेड', whatsapp:'व्हॉट्सअॅप', downloadPdf:'PDF', language:'भाषा', smartQuotation:'स्मार्ट कोटेशन', smartInvoice:'स्मार्ट इनव्हॉइस', smartReceipt:'स्मार्ट पावती', smartExpense:'स्मार्ट खर्च', taglineQ:'Create. Send. Track.', taglineI:'Create. Send. Get Paid.', taglineR:'Paid. Receipt. Share.', taglineE:'Track. Spend. Profit.', customers:'ग्राहक', products:'उत्पादन', pending:'थकबाकी', todaySales:'आजची विक्री', invoices:'इनव्हॉइस', recentInvoices:'अलीकडील', noInvoices:'नाही', settings:'सेटिंग्ज' },
+      gu: { login:'લૉગિન', username:'યુઝર', pin:'પિન', dashboard:'ડેશબોર્ડ', more:'વધુ', darkMode:'ડાર્ક મોડ', darkOn:'ચાલુ', darkOff:'બંધ', suiteHome:'સ્યુટ', business:'બિઝનેસ', owner:'માલિક', staff:'સ્ટાફ', refresh:'રિફ્રેશ', save:'સેવ', cancel:'રદ', delete:'ડિલીટ', addExpense:'ખર્ચ', saveExpense:'સેવ', category:'કેટેગરી', amount:'રકમ (₹)', date:'તારીખ', note:'નોંધ', paymentMode:'પેમેન્ટ', monthProfit:'આ મહિનાનો નફો', monthSales:'મહિનાની વેચાણ', monthExpenses:'મહિનાનો ખર્ચ', byCategory:'કેટેગરી', recentExpenses:'ખર્ચ', noExpenses:'નથી', firstExpense:'+ ખર્ચ', salesMinusExp:'વેચાણ − ખર્ચ = નફો', createQuotation:'કોટેશન', createInvoice:'ઇન્વૉઇસ', createReceipt:'રસીદ', convertToInvoice:'કન્વર્ટ', generateReceipt:'રસીદ', markPaid:'પેડ', whatsapp:'વોટ્સએપ', downloadPdf:'PDF', language:'ભાષા', smartQuotation:'સ્માર્ટ કોટેશન', smartInvoice:'સ્માર્ટ ઇન્વૉઇસ', smartReceipt:'સ્માર્ટ રસીદ', smartExpense:'સ્માર્ટ ખર્ચ', taglineQ:'Create. Send. Track.', taglineI:'Create. Send. Get Paid.', taglineR:'Paid. Receipt. Share.', taglineE:'Track. Spend. Profit.', customers:'ગ્રાહક', products:'પ્રોડક્ટ', pending:'બાકી', todaySales:'આજની વેચાણ', invoices:'ઇન્વૉઇસ', recentInvoices:'તાજેતરના', noInvoices:'નથી', settings:'સેટિંગ્સ' },
+      pa: { login:'ਲਾਗਇਨ', username:'ਯੂਜ਼ਰ', pin:'ਪਿੰਨ', dashboard:'ਡੈਸ਼ਬੋਰਡ', more:'ਹੋਰ', darkMode:'ਡਾਰਕ ਮੋਡ', darkOn:'ਚਾਲੂ', darkOff:'ਬੰਦ', suiteHome:'ਸੂਟ', business:'ਕਾਰੋਬਾਰ', owner:'ਮਾਲਕ', staff:'ਸਟਾਫ', refresh:'ਰਿਫ੍ਰੈਸ਼', save:'ਸੇਵ', cancel:'ਰੱਦ', delete:'ਮਿਟਾਓ', addExpense:'ਖਰਚ', saveExpense:'ਸੇਵ', category:'ਸ਼੍ਰੇਣੀ', amount:'ਰਕਮ (₹)', date:'ਤਾਰੀਖ', note:'ਨੋਟ', paymentMode:'ਭੁਗਤਾਨ', monthProfit:'ਇਸ ਮਹੀਨੇ ਦਾ ਲਾਭ', monthSales:'ਮਹੀਨੇ ਦੀ ਵਿਕਰੀ', monthExpenses:'ਮਹੀਨੇ ਦਾ ਖਰਚ', byCategory:'ਸ਼੍ਰੇਣੀ', recentExpenses:'ਖਰਚ', noExpenses:'ਨਹੀਂ', firstExpense:'+ ਖਰਚ', salesMinusExp:'ਵਿਕਰੀ − ਖਰਚ = ਲਾਭ', createQuotation:'ਕੋਟੇਸ਼ਨ', createInvoice:'ਇਨਵੌਇਸ', createReceipt:'ਰਸੀਦ', convertToInvoice:'ਕਨਵਰਟ', generateReceipt:'ਰਸੀਦ', markPaid:'ਪੇਡ', whatsapp:'ਵਟਸਐਪ', downloadPdf:'PDF', language:'ਭਾਸ਼ਾ', smartQuotation:'ਸਮਾਰਟ ਕੋਟੇਸ਼ਨ', smartInvoice:'ਸਮਾਰਟ ਇਨਵੌਇਸ', smartReceipt:'ਸਮਾਰਟ ਰਸੀਦ', smartExpense:'ਸਮਾਰਟ ਖਰਚ', taglineQ:'Create. Send. Track.', taglineI:'Create. Send. Get Paid.', taglineR:'Paid. Receipt. Share.', taglineE:'Track. Spend. Profit.', customers:'ਗਾਹਕ', products:'ਉਤਪਾਦ', pending:'ਬਕਾਇਆ', todaySales:'ਅੱਜ ਦੀ ਵਿਕਰੀ', invoices:'ਇਨਵੌਇਸ', recentInvoices:'ਹਾਲੀਆ', noInvoices:'ਨਹੀਂ', settings:'ਸੈਟਿੰਗ' }
+    };
+    const t = (key, lang) => {
+      const code = lang || (typeof localStorage !== 'undefined' && localStorage.getItem('jmr_lang')) || 'en';
+      return (I18N[code] && I18N[code][key]) || (I18N.en && I18N.en[key]) || key;
+    };
+
     const SUPABASE_URL = 'https://ysvxjeayliudyvpfsyao.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_itdjn70skg6_gElJXcEJdA_who_9TVL';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -576,8 +595,8 @@ const { useState, useEffect, useCallback } = React;
                 <div className="w-16 h-16 bg-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-brand-600/30">
                   <span className="text-white text-2xl font-bold">SE</span>
                 </div>
-                <h1 className="text-2xl font-bold text-slate-900">Smart Expense</h1>
-                <p className="text-slate-500 text-sm mt-1">Track. Spend. Profit.</p>
+                <h1 className="text-2xl font-bold text-slate-900">{t("smartExpense", lang)}</h1>
+                <p className="text-slate-500 text-sm mt-1">{t("taglineE", lang)}</p>
               </div>
               <div className="bg-white rounded-2xl shadow-card p-6">
                 <form onSubmit={handleLogin} className="space-y-4">
@@ -1227,7 +1246,7 @@ const { useState, useEffect, useCallback } = React;
               <div>
                 <p className="text-slate-500 text-sm font-medium">{greeting} 👋</p>
                 <h1 className="text-xl font-bold text-slate-900 mt-0.5">{business?.name || 'Smart Expense'}</h1>
-                <p className="text-xs text-slate-400 mt-0.5">Sales − Expenses = Profit</p>
+                <p className="text-xs text-slate-400 mt-0.5">{t('salesMinusExp', lang)}</p>
               </div>
               <div className="w-11 h-11 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm">
                 {(business?.name || 'SE').substring(0, 2).toUpperCase()}
@@ -1241,25 +1260,25 @@ const { useState, useEffect, useCallback } = React;
           </div>
           <div className="px-5 mb-4">
             <div className={'rounded-2xl p-5 text-white shadow-soft ' + (profit >= 0 ? 'bg-gradient-to-br from-emerald-600 to-emerald-800' : 'bg-gradient-to-br from-rose-600 to-rose-800')}>
-              <p className="text-white/80 text-xs font-medium mb-1">This month profit</p>
+              <p className="text-white/80 text-xs font-medium mb-1">{t('monthProfit', lang)}</p>
               <p className="text-3xl font-bold">{formatINR(profit)}</p>
               <p className="text-white/70 text-xs mt-2">Sales (paid) {formatINR(monthPaidSales)} − Expenses {formatINR(monthExpenses)}</p>
             </div>
           </div>
           <div className="px-5 grid grid-cols-2 gap-3 mb-4">
             <div className="bg-white rounded-2xl p-4 shadow-card">
-              <p className="text-slate-500 text-[11px] font-medium mb-1">Month sales (paid)</p>
+              <p className="text-slate-500 text-[11px] font-medium mb-1">{t('monthSales', lang)}</p>
               <p className="text-xl font-bold text-emerald-600">{formatINR(monthPaidSales)}</p>
             </div>
             <div className="bg-white rounded-2xl p-4 shadow-card">
-              <p className="text-slate-500 text-[11px] font-medium mb-1">Month expenses</p>
+              <p className="text-slate-500 text-[11px] font-medium mb-1">{t('monthExpenses', lang)}</p>
               <p className="text-xl font-bold text-rose-600">{formatINR(monthExpenses)}</p>
             </div>
           </div>
           {catList.length > 0 && (
             <div className="px-5 mb-4">
               <div className="bg-white rounded-2xl p-4 shadow-card">
-                <p className="text-sm font-semibold text-slate-900 mb-3">By category · this month</p>
+                <p className="text-sm font-semibold text-slate-900 mb-3">{t('byCategory', lang)}</p>
                 <div className="space-y-2">
                   {catList.map(([c, a]) => (
                     <div key={c} className="flex justify-between text-sm">
@@ -1273,14 +1292,14 @@ const { useState, useEffect, useCallback } = React;
           )}
           <div className="px-5">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-semibold text-slate-900">Recent expenses</h2>
+              <h2 className="font-semibold text-slate-900">{t('recentExpenses', lang)}</h2>
               <button onClick={loadData} className="text-brand-600 text-sm font-medium flex items-center gap-1"><IconRefresh /> Refresh</button>
             </div>
             <div className="space-y-3">
               {expenses.length === 0 ? (
                 <div className="bg-white rounded-2xl p-8 text-center text-slate-400 shadow-card">
-                  <p>No expenses yet</p>
-                  <button onClick={() => setScreen('create')} className="mt-2 text-brand-600 font-medium text-sm">+ Add first expense</button>
+                  <p>{t('noExpenses', lang)}</p>
+                  <button onClick={() => setScreen('create')} className="mt-2 text-brand-600 font-medium text-sm">{t('firstExpense', lang)}</button>
                 </div>
               ) : expenses.slice(0, 20).map((ex) => (
                 <div key={ex.id} className="bg-white rounded-2xl p-4 shadow-card flex items-center gap-3">
@@ -1305,30 +1324,30 @@ const { useState, useEffect, useCallback } = React;
         <div className="pb-28 min-h-screen bg-slate-50">
           <div className="bg-white px-4 pt-12 pb-4 sticky top-0 z-20 border-b border-slate-100 flex items-center gap-3">
             <button onClick={() => setScreen('dashboard')} className="p-1"><IconBack /></button>
-            <h1 className="text-lg font-bold text-slate-900 flex-1">Add Expense</h1>
+            <h1 className="text-lg font-bold text-slate-900 flex-1">{t("addExpense", lang)}</h1>
           </div>
           <div className="p-4 space-y-3">
             <div className="bg-white rounded-2xl p-4 shadow-card space-y-3">
               <div>
-                <label className="text-xs font-semibold text-slate-500">Date</label>
+                <label className="text-xs font-semibold text-slate-500">{t("date", lang)}</label>
                 <input type="date" value={expForm.expense_date} onChange={e => setExpForm({...expForm, expense_date: e.target.value})}
                   className="w-full mt-1 px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-500">Category</label>
+                <label className="text-xs font-semibold text-slate-500">{t("category", lang)}</label>
                 <select value={expForm.category} onChange={e => setExpForm({...expForm, category: e.target.value})}
                   className="w-full mt-1 px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none">
                   {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-500">Amount (₹)</label>
+                <label className="text-xs font-semibold text-slate-500">{t('amount', lang)}</label>
                 <input type="number" inputMode="decimal" placeholder="0" value={expForm.amount}
                   onChange={e => setExpForm({...expForm, amount: e.target.value})}
                   className="w-full mt-1 px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none font-semibold" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-500">Payment mode</label>
+                <label className="text-xs font-semibold text-slate-500">{t("paymentMode", lang)}</label>
                 <div className="flex gap-2 mt-1 flex-wrap">
                   {['cash','upi','card','bank'].map(m => (
                     <button key={m} type="button" onClick={() => setExpForm({...expForm, payment_mode: m})}
@@ -1337,13 +1356,13 @@ const { useState, useEffect, useCallback } = React;
                 </div>
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-500">Note (optional)</label>
+                <label className="text-xs font-semibold text-slate-500">{t('note', lang)}</label>
                 <input placeholder="e.g. Shop rent March" value={expForm.note}
                   onChange={e => setExpForm({...expForm, note: e.target.value})}
                   className="w-full mt-1 px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none" />
               </div>
               <button onClick={saveExpense} disabled={saving} className="w-full bg-brand-600 text-white font-semibold py-3.5 rounded-2xl disabled:opacity-60">
-                {saving ? 'Saving...' : 'Save Expense'}
+                {saving ? 'Saving...' : t('saveExpense', lang)}
               </button>
             </div>
           </div>
@@ -2192,10 +2211,10 @@ const { useState, useEffect, useCallback } = React;
 
       const More = () => (
         <div className="pb-24 min-h-screen">
-          <div className="bg-white px-5 pt-12 pb-6"><h1 className="text-xl font-bold">More</h1></div>
+          <div className="bg-white px-5 pt-12 pb-6"><h1 className="text-xl font-bold">{t("more", lang)}</h1></div>
           <div className="px-4 space-y-2">
             <div className="bg-white rounded-2xl p-4 shadow-card">
-              <p className="text-sm text-slate-500">Business</p>
+              <p className="text-sm text-slate-500">{t("business", lang)}</p>
               <p className="font-semibold text-slate-900 mt-0.5">{business?.name}</p>
               <p className="text-xs text-slate-400 mt-1">Username: {staffUser ? staffUser.login_code : business?.login_code}</p>
               {staffUser && <p className="text-xs font-semibold text-amber-700 mt-1">Staff · {staffUser.name}</p>}
@@ -2203,8 +2222,8 @@ const { useState, useEffect, useCallback } = React;
             </div>
             <button onClick={toggleDarkMode} className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
               <div className="flex-1">
-                <p className="font-semibold text-slate-900">Dark Mode</p>
-                <p className="text-sm text-slate-500">{darkMode ? 'On · easier on eyes at night' : 'Off · light theme'}</p>
+                <p className="font-semibold text-slate-900">{t("darkMode", lang)}</p>
+                <p className="text-sm text-slate-500">{darkMode ? t('darkOn', lang) : t('darkOff', lang)}</p>
               </div>
               <div className={'w-12 h-7 rounded-full p-0.5 transition ' + (darkMode ? 'bg-brand-600' : 'bg-slate-200')}>
                 <div className={'w-6 h-6 rounded-full bg-white shadow transition ' + (darkMode ? 'translate-x-5' : '')}></div>
@@ -2213,7 +2232,7 @@ const { useState, useEffect, useCallback } = React;
 
             <div className="bg-white rounded-2xl p-4 shadow-card">
               <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Language / भाषा / மொழி</p>
-              <select value={typeof lang !== 'undefined' ? lang : (localStorage.getItem('jmr_lang')||'en')} onChange={e => { localStorage.setItem('jmr_lang', e.target.value); if (typeof setLang === 'function') setLang(e.target.value); else window.location.reload(); }}
+              <select value={typeof lang !== 'undefined' ? lang : (localStorage.getItem('jmr_lang')||'en')} onChange={e => { localStorage.setItem('jmr_lang', e.target.value); setLang(e.target.value); }}
                 className="w-full px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none">
                 <option value="en">English</option>
                 <option value="hi">हिन्दी · Hindi</option>
@@ -2273,7 +2292,7 @@ const { useState, useEffect, useCallback } = React;
             <a href="index.html" className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
               <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-xs">JMR</div>
               <div className="flex-1">
-                <p className="font-semibold text-slate-900">Suite Home</p>
+                <p className="font-semibold text-slate-900">{t("suiteHome", lang)}</p>
                 <p className="text-sm text-slate-500">All apps in one place</p>
               </div>
               <span className="text-slate-400">→</span>
