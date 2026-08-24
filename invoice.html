@@ -95,6 +95,90 @@
     };
 const { useState, useEffect, useCallback } = React;
 
+    // Shared JMR session — one login works across Invoice / Quotation / Receipt / Expense
+    const JMR_SESSION = {
+      readBusiness() {
+        try {
+          return JSON.parse(localStorage.getItem('jmr_business') || 'null')
+            || JSON.parse(localStorage.getItem('si_business') || 'null')
+            || JSON.parse(localStorage.getItem('sq_business') || 'null')
+            || JSON.parse(localStorage.getItem('sr_business') || 'null')
+            || JSON.parse(localStorage.getItem('se_business') || 'null');
+        } catch (e) { return null; }
+      },
+      readStaff() {
+        try {
+          return JSON.parse(localStorage.getItem('jmr_staff') || 'null')
+            || JSON.parse(localStorage.getItem('si_staff') || 'null')
+            || JSON.parse(localStorage.getItem('sq_staff') || 'null')
+            || JSON.parse(localStorage.getItem('sr_staff') || 'null')
+            || JSON.parse(localStorage.getItem('se_staff') || 'null');
+        } catch (e) { return null; }
+      },
+      readAdmin() {
+        return localStorage.getItem('jmr_admin') === '1'
+          || localStorage.getItem('si_admin') === '1'
+          || localStorage.getItem('sq_admin') === '1'
+          || localStorage.getItem('sr_admin') === '1'
+          || localStorage.getItem('se_admin') === '1';
+      },
+      loginOwner(biz) {
+        const s = JSON.stringify(biz);
+        localStorage.setItem('jmr_business', s);
+        ['si','sq','sr','se'].forEach(p => {
+          localStorage.setItem(p + '_business', s);
+          localStorage.removeItem(p + '_staff');
+          localStorage.removeItem(p + '_admin');
+        });
+        localStorage.removeItem('jmr_staff');
+        localStorage.removeItem('jmr_admin');
+      },
+      loginStaff(biz, staff) {
+        const s = JSON.stringify(biz);
+        const st = JSON.stringify(staff);
+        localStorage.setItem('jmr_business', s);
+        localStorage.setItem('jmr_staff', st);
+        localStorage.removeItem('jmr_admin');
+        ['si','sq','sr','se'].forEach(p => {
+          localStorage.setItem(p + '_business', s);
+          localStorage.setItem(p + '_staff', st);
+          localStorage.removeItem(p + '_admin');
+        });
+      },
+      loginAdmin() {
+        localStorage.setItem('jmr_admin', '1');
+        ['si','sq','sr','se'].forEach(p => localStorage.setItem(p + '_admin', '1'));
+      },
+      logout() {
+        ['jmr_business','jmr_staff','jmr_admin'].forEach(k => localStorage.removeItem(k));
+        ['si','sq','sr','se'].forEach(p => {
+          localStorage.removeItem(p + '_business');
+          localStorage.removeItem(p + '_staff');
+          localStorage.removeItem(p + '_admin');
+        });
+      },
+      staffListKey(bizId) {
+        return 'jmr_stafflist_' + bizId;
+      },
+      readStaffList(bizId) {
+        try {
+          const j = localStorage.getItem('jmr_stafflist_' + bizId);
+          if (j) return JSON.parse(j);
+          for (const p of ['si','sq','sr','se']) {
+            const raw = localStorage.getItem(p + '_stafflist_' + bizId);
+            if (raw) return JSON.parse(raw);
+          }
+        } catch (e) {}
+        return [];
+      },
+      writeStaffList(bizId, list) {
+        const s = JSON.stringify(list);
+        localStorage.setItem('jmr_stafflist_' + bizId, s);
+        ['si','sq','sr','se'].forEach(p => localStorage.setItem(p + '_stafflist_' + bizId, s));
+      }
+    };
+
+
 
     const I18N = {
       en: { login:'Login', username:'Username', pin:'PIN', dashboard:'Dashboard', more:'More', darkMode:'Dark Mode', darkOn:'On', darkOff:'Off', suiteHome:'Suite Home', business:'Business', owner:'Owner', staff:'Staff', refresh:'Refresh', save:'Save', cancel:'Cancel', delete:'Delete', addExpense:'Add Expense', saveExpense:'Save Expense', category:'Category', amount:'Amount (₹)', date:'Date', note:'Note', paymentMode:'Payment mode', monthProfit:'This month profit', monthSales:'Month sales (paid)', monthExpenses:'Month expenses', byCategory:'By category · this month', recentExpenses:'Recent expenses', noExpenses:'No expenses yet', firstExpense:'+ Add first expense', salesMinusExp:'Sales − Expenses = Profit', createQuotation:'Create Quotation', createInvoice:'Create Invoice', createReceipt:'Create Receipt', convertToInvoice:'Convert to Invoice', generateReceipt:'Generate Receipt', markPaid:'Mark as Paid', whatsapp:'WhatsApp', downloadPdf:'Download PDF', language:'Language', smartQuotation:'Smart Quotation', smartInvoice:'Smart Invoice', smartReceipt:'Smart Receipt', smartExpense:'Smart Expense', taglineQ:'Create. Send. Track. Convert.', taglineI:'Create. Send. Get Paid.', taglineR:'Paid. Receipt. Share.', taglineE:'Track. Spend. Profit.', customers:'Customers', products:'Products', pending:'Pending', todaySales:"Today's Sales", invoices:'Invoices', recentInvoices:'Recent Invoices', noInvoices:'No invoices yet', settings:'Settings' },
@@ -184,11 +268,11 @@ const { useState, useEffect, useCallback } = React;
 
       const toggleDarkMode = () => setDarkMode(d => !d);
 
-      const [business, setBusiness] = useState(() => { try { return JSON.parse(localStorage.getItem('si_business')); } catch { return null; } });
-      const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('si_admin') === '1');
-      const [staffUser, setStaffUser] = useState(() => { try { return JSON.parse(localStorage.getItem('si_staff')); } catch { return null; } });
+      const [business, setBusiness] = useState(() => { try { return JMR_SESSION.readBusiness(); } catch { return null; } });
+      const [isAdmin, setIsAdmin] = useState(() => JMR_SESSION.readAdmin());
+      const [staffUser, setStaffUser] = useState(() => { try { return JMR_SESSION.readStaff(); } catch { return null; } });
       const [staffList, setStaffList] = useState([]);
-      const [staffForm, setStaffForm] = useState({ name: '', login_code: '', pin: '' });
+      const [staffForm, setStaffForm] = useState({ name: '', login_code: '', pin: '', role: 'cashier' });
       const [savingStaff, setSavingStaff] = useState(false);
       const [loginCode, setLoginCode] = useState('');
       const [loginPin, setLoginPin] = useState('');
@@ -262,7 +346,7 @@ const { useState, useEffect, useCallback } = React;
         setLoginLoading(true);
         try {
           if (loginCode.toUpperCase() === 'ADMIN' && loginPin === MASTER_PIN) {
-            localStorage.setItem('si_admin', '1');
+            JMR_SESSION.loginAdmin();
             setIsAdmin(true);
             setShowAdmin(true);
             setLoginLoading(false);
@@ -274,9 +358,7 @@ const { useState, useEffect, useCallback } = React;
           const { data, error } = await supabase.from('businesses').select('*').eq('login_code', code).eq('pin', pin).eq('is_active', true).maybeSingle();
           if (error) throw error;
           if (data) {
-            localStorage.setItem('si_business', JSON.stringify(data));
-            localStorage.removeItem('si_admin');
-            localStorage.removeItem('si_staff');
+            JMR_SESSION.loginOwner(data);
             setBusiness(data);
             setStaffUser(null);
             setIsAdmin(false);
@@ -290,7 +372,7 @@ const { useState, useEffect, useCallback } = React;
             if (st) staffHit = st;
           } catch (e) {}
           if (!staffHit) {
-            const allKeys = Object.keys(localStorage).filter(k => k.startsWith('si_stafflist_'));
+            const allKeys = Object.keys(localStorage).filter(k => k.startsWith('jmr_stafflist_') || k.startsWith('si_stafflist_') || k.startsWith('sq_stafflist_') || k.startsWith('sr_stafflist_') || k.startsWith('se_stafflist_'));
             for (const k of allKeys) {
               try {
                 const list = JSON.parse(localStorage.getItem(k) || '[]');
@@ -302,9 +384,7 @@ const { useState, useEffect, useCallback } = React;
           if (!staffHit) { setLoginError('Invalid Username or PIN'); setLoginLoading(false); return; }
           const { data: biz, error: bErr } = await supabase.from('businesses').select('*').eq('id', staffHit.business_id).maybeSingle();
           if (bErr || !biz) { setLoginError('Staff business not found'); setLoginLoading(false); return; }
-          localStorage.setItem('si_business', JSON.stringify(biz));
-          localStorage.setItem('si_staff', JSON.stringify(staffHit));
-          localStorage.removeItem('si_admin');
+          JMR_SESSION.loginStaff(biz, staffHit);
           setBusiness(biz);
           setStaffUser(staffHit);
           setIsAdmin(false);
@@ -316,13 +396,11 @@ const { useState, useEffect, useCallback } = React;
       };
 
       const handleLogout = () => {
-        localStorage.removeItem('si_business');
-        localStorage.removeItem('si_admin');
+        JMR_SESSION.logout();
         setBusiness(null);
         setStaffUser(null);
         setIsAdmin(false);
         setShowAdmin(false);
-        localStorage.removeItem('si_staff');
         setCustomers([]); setProducts([]); setInvoices([]);
         setScreen('dashboard');
         setLoginCode(''); setLoginPin('');
@@ -468,14 +546,13 @@ const { useState, useEffect, useCallback } = React;
       const loadStaffList = () => {
         if (!business?.id) return;
         try {
-          const raw = localStorage.getItem('si_stafflist_' + business.id);
-          setStaffList(raw ? JSON.parse(raw) : []);
+          setStaffList(JMR_SESSION.readStaffList(business.id));
         } catch { setStaffList([]); }
       };
 
       const saveStaffList = (list) => {
         setStaffList(list);
-        if (business?.id) localStorage.setItem('si_stafflist_' + business.id, JSON.stringify(list));
+        if (business?.id) JMR_SESSION.writeStaffList(business.id, list);
       };
 
       const addStaffMember = async () => {
@@ -496,7 +573,8 @@ const { useState, useEffect, useCallback } = React;
             name: staffForm.name.trim(),
             login_code: code,
             pin: staffForm.pin.trim(),
-            role: 'staff',
+            role: (staffForm.role || 'cashier'),
+            permissions: (ROLE_PRESETS[staffForm.role || 'cashier'] || {}).permissions ? Object.assign({}, ROLE_PRESETS[staffForm.role || 'cashier'].permissions) : {},
             is_active: true,
             created_at: new Date().toISOString()
           };
@@ -506,13 +584,13 @@ const { useState, useEffect, useCallback } = React;
               name: member.name,
               login_code: member.login_code,
               pin: member.pin,
-              role: 'staff',
+              role: member.role,
               is_active: true
             });
           } catch (e) {}
           saveStaffList([member, ...staffList]);
-          setStaffForm({ name: '', login_code: '', pin: '' });
-          alert('Staff created!\\nUsername: ' + code + '\\nPIN: ' + member.pin);
+          setStaffForm({ name: '', login_code: '', pin: '', role: 'cashier' });
+          alert('Staff created!\nUsername: ' + code + '\nRole: ' + (member.role || '') + '\nPIN: ' + member.pin);
         } finally {
           setSavingStaff(false);
         }
@@ -529,7 +607,36 @@ const { useState, useEffect, useCallback } = React;
 
       const isOwner = !staffUser;
 
-      const startNewInvoice = () => { setSelectedCustomer(null); setItems([]); setDiscount(0); setIsInterstate(false); setLastInvoice(null); setScreen('create'); };
+      const ROLE_PRESETS = {
+        cashier: {
+          label: 'Cashier',
+          desc: 'Create invoice & POS only',
+          permissions: { create_invoice: true, pos: true, mark_paid: true, view_reports: false, expense: false, delete_records: false }
+        },
+        accountant: {
+          label: 'Accountant',
+          desc: 'Reports, expenses, view invoices',
+          permissions: { create_invoice: false, pos: false, mark_paid: false, view_reports: true, expense: true, delete_records: false }
+        },
+        manager: {
+          label: 'Manager',
+          desc: 'Almost full access (no settings/staff)',
+          permissions: { create_invoice: true, pos: true, mark_paid: true, view_reports: true, expense: true, delete_records: true }
+        }
+      };
+
+      const can = (perm) => {
+        if (isOwner) return true;
+        if (!staffUser) return false;
+        const role = staffUser.role || 'cashier';
+        const preset = ROLE_PRESETS[role];
+        if (staffUser.permissions && typeof staffUser.permissions[perm] === 'boolean') {
+          return staffUser.permissions[perm];
+        }
+        return !!(preset && preset.permissions && preset.permissions[perm]);
+      };
+
+      const startNewInvoice = () => { if (!can('create_invoice')) { alert('No access: your role cannot create invoices'); return; } setSelectedCustomer(null); setItems([]); setDiscount(0); setIsInterstate(false); setLastInvoice(null); setScreen('create'); };
 
       const addItem = (product) => {
         const existing = items.find(i => i.product_id === product.id);
@@ -853,6 +960,7 @@ const { useState, useEffect, useCallback } = React;
 
 
       const markAsPaid = async (inv) => {
+        if (!can('mark_paid')) { alert('No access: cannot mark paid'); return; }
         if (!inv || inv.status === 'paid') return;
         if (!confirm('Mark ' + inv.invoice_number + ' as Paid?')) return;
         try {
@@ -1887,7 +1995,7 @@ const { useState, useEffect, useCallback } = React;
             updated_at: new Date().toISOString()
           }).eq('id', business.id).select().single();
           if (error) throw error;
-          localStorage.setItem('si_business', JSON.stringify(data));
+          JMR_SESSION.loginOwner(data);
           setBusiness(data);
           alert('Profile saved!');
           setScreen('more');
@@ -2305,7 +2413,7 @@ const { useState, useEffect, useCallback } = React;
                 <button onClick={() => setScreen('more')} className="p-1 -ml-1"><IconBack /></button>
                 <h1 className="text-lg font-bold">Staff Login</h1>
               </div>
-              <p className="text-xs text-slate-500 mt-1">Cashiers can create invoices & POS — not change settings</p>
+              <p className="text-xs text-slate-500 mt-1">Choose role: Cashier / Accountant / Manager — each has different access</p>
             </div>
             <div className="p-4 space-y-3">
               <div className="bg-white rounded-2xl p-4 shadow-card space-y-3">
@@ -2318,6 +2426,18 @@ const { useState, useEffect, useCallback } = React;
                 <input placeholder="PIN (4+ digits)" type="password" inputMode="numeric" value={staffForm.pin}
                   onChange={e => setStaffForm({...staffForm, pin: e.target.value})}
                   className="w-full px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none" />
+                <div>
+                  <p className="text-[10px] font-semibold text-slate-500 uppercase mb-1.5">Role / Access</p>
+                  <div className="space-y-2">
+                    {Object.entries(ROLE_PRESETS).map(([key, r]) => (
+                      <button key={key} type="button" onClick={() => setStaffForm({...staffForm, role: key})}
+                        className={'w-full text-left px-3 py-2.5 rounded-xl border text-sm ' + (staffForm.role === key ? 'border-brand-600 bg-brand-50' : 'border-slate-100 bg-slate-50')}>
+                        <span className="font-semibold text-slate-900">{r.label}</span>
+                        <span className="block text-[11px] text-slate-500 mt-0.5">{r.desc}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <button onClick={addStaffMember} disabled={savingStaff}
                   className="w-full bg-brand-600 text-white font-semibold py-3 rounded-xl text-sm disabled:opacity-60">
                   {savingStaff ? 'Saving...' : 'Create Staff Login'}
@@ -2329,6 +2449,7 @@ const { useState, useEffect, useCallback } = React;
                   <div>
                     <p className="font-semibold text-slate-900">{s.name}</p>
                     <p className="text-xs text-slate-400">Username: {s.login_code} · PIN: {s.pin}</p>
+                    <p className="text-[10px] font-semibold text-brand-600 mt-0.5 uppercase">{(ROLE_PRESETS[s.role]||{}).label || s.role || 'staff'}</p>
                   </div>
                   <button onClick={() => removeStaffMember(s.id)} className="text-xs text-rose-500 font-semibold">Remove</button>
                 </div>
@@ -2349,7 +2470,7 @@ const { useState, useEffect, useCallback } = React;
               <p className="text-sm text-slate-500">{t("business", lang)}</p>
               <p className="font-semibold text-slate-900 mt-0.5">{business?.name}</p>
               <p className="text-xs text-slate-400 mt-1">Username: {staffUser ? staffUser.login_code : business?.login_code}</p>
-              {staffUser && <p className="text-xs font-semibold text-amber-700 mt-1">Staff · {staffUser.name}</p>}
+              {staffUser && <p className="text-xs font-semibold text-amber-700 mt-1">Staff · {staffUser.name} · {(ROLE_PRESETS[staffUser.role]||{}).label || staffUser.role}</p>}
               {!staffUser && <p className="text-xs font-semibold text-emerald-700 mt-1">Owner</p>}
             </div>
             <button onClick={toggleDarkMode} className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">

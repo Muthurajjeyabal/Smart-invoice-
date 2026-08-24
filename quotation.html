@@ -96,6 +96,90 @@
     };
 const { useState, useEffect, useCallback } = React;
 
+    // Shared JMR session — one login works across Invoice / Quotation / Receipt / Expense
+    const JMR_SESSION = {
+      readBusiness() {
+        try {
+          return JSON.parse(localStorage.getItem('jmr_business') || 'null')
+            || JSON.parse(localStorage.getItem('si_business') || 'null')
+            || JSON.parse(localStorage.getItem('sq_business') || 'null')
+            || JSON.parse(localStorage.getItem('sr_business') || 'null')
+            || JSON.parse(localStorage.getItem('se_business') || 'null');
+        } catch (e) { return null; }
+      },
+      readStaff() {
+        try {
+          return JSON.parse(localStorage.getItem('jmr_staff') || 'null')
+            || JSON.parse(localStorage.getItem('si_staff') || 'null')
+            || JSON.parse(localStorage.getItem('sq_staff') || 'null')
+            || JSON.parse(localStorage.getItem('sr_staff') || 'null')
+            || JSON.parse(localStorage.getItem('se_staff') || 'null');
+        } catch (e) { return null; }
+      },
+      readAdmin() {
+        return localStorage.getItem('jmr_admin') === '1'
+          || localStorage.getItem('si_admin') === '1'
+          || localStorage.getItem('sq_admin') === '1'
+          || localStorage.getItem('sr_admin') === '1'
+          || localStorage.getItem('se_admin') === '1';
+      },
+      loginOwner(biz) {
+        const s = JSON.stringify(biz);
+        localStorage.setItem('jmr_business', s);
+        ['si','sq','sr','se'].forEach(p => {
+          localStorage.setItem(p + '_business', s);
+          localStorage.removeItem(p + '_staff');
+          localStorage.removeItem(p + '_admin');
+        });
+        localStorage.removeItem('jmr_staff');
+        localStorage.removeItem('jmr_admin');
+      },
+      loginStaff(biz, staff) {
+        const s = JSON.stringify(biz);
+        const st = JSON.stringify(staff);
+        localStorage.setItem('jmr_business', s);
+        localStorage.setItem('jmr_staff', st);
+        localStorage.removeItem('jmr_admin');
+        ['si','sq','sr','se'].forEach(p => {
+          localStorage.setItem(p + '_business', s);
+          localStorage.setItem(p + '_staff', st);
+          localStorage.removeItem(p + '_admin');
+        });
+      },
+      loginAdmin() {
+        localStorage.setItem('jmr_admin', '1');
+        ['si','sq','sr','se'].forEach(p => localStorage.setItem(p + '_admin', '1'));
+      },
+      logout() {
+        ['jmr_business','jmr_staff','jmr_admin'].forEach(k => localStorage.removeItem(k));
+        ['si','sq','sr','se'].forEach(p => {
+          localStorage.removeItem(p + '_business');
+          localStorage.removeItem(p + '_staff');
+          localStorage.removeItem(p + '_admin');
+        });
+      },
+      staffListKey(bizId) {
+        return 'jmr_stafflist_' + bizId;
+      },
+      readStaffList(bizId) {
+        try {
+          const j = localStorage.getItem('jmr_stafflist_' + bizId);
+          if (j) return JSON.parse(j);
+          for (const p of ['si','sq','sr','se']) {
+            const raw = localStorage.getItem(p + '_stafflist_' + bizId);
+            if (raw) return JSON.parse(raw);
+          }
+        } catch (e) {}
+        return [];
+      },
+      writeStaffList(bizId, list) {
+        const s = JSON.stringify(list);
+        localStorage.setItem('jmr_stafflist_' + bizId, s);
+        ['si','sq','sr','se'].forEach(p => localStorage.setItem(p + '_stafflist_' + bizId, s));
+      }
+    };
+
+
 
     const I18N = {
       en: { login:'Login', username:'Username', pin:'PIN', dashboard:'Dashboard', more:'More', darkMode:'Dark Mode', darkOn:'On', darkOff:'Off', suiteHome:'Suite Home', business:'Business', owner:'Owner', staff:'Staff', refresh:'Refresh', save:'Save', cancel:'Cancel', delete:'Delete', addExpense:'Add Expense', saveExpense:'Save Expense', category:'Category', amount:'Amount (₹)', date:'Date', note:'Note', paymentMode:'Payment mode', monthProfit:'This month profit', monthSales:'Month sales (paid)', monthExpenses:'Month expenses', byCategory:'By category · this month', recentExpenses:'Recent expenses', noExpenses:'No expenses yet', firstExpense:'+ Add first expense', salesMinusExp:'Sales − Expenses = Profit', createQuotation:'Create Quotation', createInvoice:'Create Invoice', createReceipt:'Create Receipt', convertToInvoice:'Convert to Invoice', generateReceipt:'Generate Receipt', markPaid:'Mark as Paid', whatsapp:'WhatsApp', downloadPdf:'Download PDF', language:'Language', smartQuotation:'Smart Quotation', smartInvoice:'Smart Invoice', smartReceipt:'Smart Receipt', smartExpense:'Smart Expense', taglineQ:'Create. Send. Track. Convert.', taglineI:'Create. Send. Get Paid.', taglineR:'Paid. Receipt. Share.', taglineE:'Track. Spend. Profit.', customers:'Customers', products:'Products', pending:'Pending', todaySales:"Today's Sales", invoices:'Invoices', recentInvoices:'Recent Invoices', noInvoices:'No invoices yet', settings:'Settings' },
@@ -185,9 +269,9 @@ const { useState, useEffect, useCallback } = React;
 
       const toggleDarkMode = () => setDarkMode(d => !d);
 
-      const [business, setBusiness] = useState(() => { try { return JSON.parse(localStorage.getItem('sq_business')); } catch { return null; } });
-      const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('sq_admin') === '1');
-      const [staffUser, setStaffUser] = useState(() => { try { return JSON.parse(localStorage.getItem('sq_staff')); } catch { return null; } });
+      const [business, setBusiness] = useState(() => { try { return JMR_SESSION.readBusiness(); } catch { return null; } });
+      const [isAdmin, setIsAdmin] = useState(() => JMR_SESSION.readAdmin());
+      const [staffUser, setStaffUser] = useState(() => { try { return JMR_SESSION.readStaff(); } catch { return null; } });
       const [staffList, setStaffList] = useState([]);
       const [staffForm, setStaffForm] = useState({ name: '', login_code: '', pin: '' });
       const [savingStaff, setSavingStaff] = useState(false);
@@ -263,7 +347,7 @@ const { useState, useEffect, useCallback } = React;
         setLoginLoading(true);
         try {
           if (loginCode.toUpperCase() === 'ADMIN' && loginPin === MASTER_PIN) {
-            localStorage.setItem('sq_admin', '1');
+            JMR_SESSION.loginAdmin();
             setIsAdmin(true);
             setShowAdmin(true);
             setLoginLoading(false);
@@ -275,9 +359,7 @@ const { useState, useEffect, useCallback } = React;
           const { data, error } = await supabase.from('businesses').select('*').eq('login_code', code).eq('pin', pin).eq('is_active', true).maybeSingle();
           if (error) throw error;
           if (data) {
-            localStorage.setItem('sq_business', JSON.stringify(data));
-            localStorage.removeItem('sq_admin');
-            localStorage.removeItem('sq_staff');
+            JMR_SESSION.loginOwner(data);
             setBusiness(data);
             setStaffUser(null);
             setIsAdmin(false);
@@ -291,7 +373,7 @@ const { useState, useEffect, useCallback } = React;
             if (st) staffHit = st;
           } catch (e) {}
           if (!staffHit) {
-            const allKeys = Object.keys(localStorage).filter(k => k.startsWith('sq_stafflist_'));
+            const allKeys = Object.keys(localStorage).filter(k => k.startsWith('jmr_stafflist_') || k.startsWith('si_stafflist_') || k.startsWith('sq_stafflist_') || k.startsWith('sr_stafflist_') || k.startsWith('se_stafflist_'));
             for (const k of allKeys) {
               try {
                 const list = JSON.parse(localStorage.getItem(k) || '[]');
@@ -303,9 +385,7 @@ const { useState, useEffect, useCallback } = React;
           if (!staffHit) { setLoginError('Invalid Username or PIN'); setLoginLoading(false); return; }
           const { data: biz, error: bErr } = await supabase.from('businesses').select('*').eq('id', staffHit.business_id).maybeSingle();
           if (bErr || !biz) { setLoginError('Staff business not found'); setLoginLoading(false); return; }
-          localStorage.setItem('sq_business', JSON.stringify(biz));
-          localStorage.setItem('sq_staff', JSON.stringify(staffHit));
-          localStorage.removeItem('sq_admin');
+          JMR_SESSION.loginStaff(biz, staffHit);
           setBusiness(biz);
           setStaffUser(staffHit);
           setIsAdmin(false);
@@ -317,13 +397,11 @@ const { useState, useEffect, useCallback } = React;
       };
 
       const handleLogout = () => {
-        localStorage.removeItem('sq_business');
-        localStorage.removeItem('sq_admin');
+        JMR_SESSION.logout();
         setBusiness(null);
         setStaffUser(null);
         setIsAdmin(false);
         setShowAdmin(false);
-        localStorage.removeItem('sq_staff');
         setCustomers([]); setProducts([]); setQuotations([]);
         setScreen('dashboard');
         setLoginCode(''); setLoginPin('');
@@ -472,14 +550,13 @@ const { useState, useEffect, useCallback } = React;
       const loadStaffList = () => {
         if (!business?.id) return;
         try {
-          const raw = localStorage.getItem('sq_stafflist_' + business.id);
-          setStaffList(raw ? JSON.parse(raw) : []);
+          setStaffList(JMR_SESSION.readStaffList(business.id));
         } catch { setStaffList([]); }
       };
 
       const saveStaffList = (list) => {
         setStaffList(list);
-        if (business?.id) localStorage.setItem('sq_stafflist_' + business.id, JSON.stringify(list));
+        if (business?.id) JMR_SESSION.writeStaffList(business.id, list);
       };
 
       const addStaffMember = async () => {
@@ -1912,7 +1989,7 @@ const { useState, useEffect, useCallback } = React;
             updated_at: new Date().toISOString()
           }).eq('id', business.id).select().single();
           if (error) throw error;
-          localStorage.setItem('sq_business', JSON.stringify(data));
+          JMR_SESSION.loginOwner(data);
           setBusiness(data);
           alert('Profile saved!');
           setScreen('more');
