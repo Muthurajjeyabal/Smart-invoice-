@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#4f46e5" />
+  <meta name="theme-color" content="#e11d48" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Smart Invoice" />
+  <meta name="apple-mobile-web-app-title" content="Smart Expense" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icon-192.png" />
-  <title>Smart Invoice</title>
+  <title>Smart Expense</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -20,9 +20,9 @@
         extend: {
           colors: {
             brand: {
-              50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc',
-              400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca',
-              800: '#3730a3', 900: '#312e81',
+              50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3', 300: '#fda4af',
+              400: '#fb7185', 500: '#f43f5e', 600: '#e11d48', 700: '#be123c',
+              800: '#9f1239', 900: '#881337',
             }
           },
           fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'] },
@@ -50,10 +50,10 @@
     .dark .border-slate-200 { border-color: #334155 !important; }
     .dark .border-slate-50 { border-color: #1e293b !important; }
     .dark .shadow-card, .dark .shadow-soft { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
-    .dark .bg-brand-50 { background-color: rgba(79,70,229,0.15) !important; }
-    .dark .bg-brand-100 { background-color: rgba(79,70,229,0.2) !important; }
-    .dark .text-brand-700 { color: #a5b4fc !important; }
-    .dark .text-brand-600 { color: #818cf8 !important; }
+    .dark .bg-brand-50 { background-color: rgba(225,29,72,0.15) !important; }
+    .dark .bg-brand-100 { background-color: rgba(225,29,72,0.2) !important; }
+    .dark .text-brand-700 { color: #fda4af !important; }
+    .dark .text-brand-600 { color: #fb7185 !important; }
     .dark .bg-emerald-50 { background-color: rgba(16,185,129,0.15) !important; }
     .dark .text-emerald-700, .dark .text-emerald-600, .dark .text-emerald-800 { color: #34d399 !important; }
     .dark .bg-amber-50 { background-color: rgba(245,158,11,0.15) !important; }
@@ -80,7 +80,7 @@
 <body class="bg-slate-50">
   <script>
     (function() {
-      var t = localStorage.getItem('si_theme');
+      var t = localStorage.getItem('se_theme');
       var dark = t === 'dark' || (t !== 'light' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
       if (dark) document.documentElement.classList.add('dark');
     })();
@@ -90,7 +90,7 @@
 
     window.onerror = function(msg, url, line) {
       var el = document.getElementById('root');
-      if (el) el.innerHTML = '<div style="padding:24px;font-family:sans-serif"><h2 style="color:#b91c1c">Error</h2><pre style="white-space:pre-wrap;font-size:12px">' + String(msg) + '\nLine: ' + line + '</pre><p style="color:#666;font-size:13px">Clear site data and try again. Or re-login.</p><button onclick="localStorage.clear();location.reload()" style="padding:12px 20px;background:#4f46e5;color:#fff;border:none;border-radius:12px;font-weight:600">Clear & Reload</button></div>';
+      if (el) el.innerHTML = '<div style="padding:24px;font-family:sans-serif"><h2 style="color:#b91c1c">Error</h2><pre style="white-space:pre-wrap;font-size:12px">' + String(msg) + '\nLine: ' + line + '</pre><p style="color:#666;font-size:13px">Clear site data and try again. Or re-login.</p><button onclick="localStorage.clear();location.reload()" style="padding:12px 20px;background:#e11d48;color:#fff;border:none;border-radius:12px;font-weight:600">Clear & Reload</button></div>';
       return false;
     };
 const { useState, useEffect, useCallback } = React;
@@ -113,22 +113,22 @@ const { useState, useEffect, useCallback } = React;
 
     function App() {
       const [darkMode, setDarkMode] = useState(() => {
-        const saved = localStorage.getItem('si_theme');
+        const saved = localStorage.getItem('se_theme');
         if (saved === 'dark') return true;
         if (saved === 'light') return false;
         return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
       });
       useEffect(() => {
         document.documentElement.classList.toggle('dark', darkMode);
-        localStorage.setItem('si_theme', darkMode ? 'dark' : 'light');
+        localStorage.setItem('se_theme', darkMode ? 'dark' : 'light');
         const meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute('content', darkMode ? '#0f172a' : '#4f46e5');
+        if (meta) meta.setAttribute('content', darkMode ? '#0f172a' : '#e11d48');
       }, [darkMode]);
       const toggleDarkMode = () => setDarkMode(d => !d);
 
-      const [business, setBusiness] = useState(() => { try { return JSON.parse(localStorage.getItem('si_business')); } catch { return null; } });
-      const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('si_admin') === '1');
-      const [staffUser, setStaffUser] = useState(() => { try { return JSON.parse(localStorage.getItem('si_staff')); } catch { return null; } });
+      const [business, setBusiness] = useState(() => { try { return JSON.parse(localStorage.getItem('se_business')); } catch { return null; } });
+      const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('se_admin') === '1');
+      const [staffUser, setStaffUser] = useState(() => { try { return JSON.parse(localStorage.getItem('se_staff')); } catch { return null; } });
       const [staffList, setStaffList] = useState([]);
       const [staffForm, setStaffForm] = useState({ name: '', login_code: '', pin: '' });
       const [savingStaff, setSavingStaff] = useState(false);
@@ -146,6 +146,8 @@ const { useState, useEffect, useCallback } = React;
       const [customers, setCustomers] = useState([]);
       const [products, setProducts] = useState([]);
       const [invoices, setInvoices] = useState([]);
+      const [expenses, setExpenses] = useState([]);
+      const [expForm, setExpForm] = useState({ expense_date: new Date().toISOString().split('T')[0], category: 'Other', amount: '', payment_mode: 'cash', note: '' });
       const [selectedCustomer, setSelectedCustomer] = useState(null);
       const [items, setItems] = useState([]);
       const [discount, setDiscount] = useState(0);
@@ -160,7 +162,7 @@ const { useState, useEffect, useCallback } = React;
       const [showAddCustomer, setShowAddCustomer] = useState(false);
       const [selectedCustomerDetail, setSelectedCustomerDetail] = useState(null);
       const [recurringList, setRecurringList] = useState(() => {
-        try { return JSON.parse(localStorage.getItem('si_recurring_' + (JSON.parse(localStorage.getItem('si_business')||'null')||{}).id) || '[]'); } catch { return []; }
+        try { return JSON.parse(localStorage.getItem('se_recurring_' + (JSON.parse(localStorage.getItem('se_business')||'null')||{}).id) || '[]'); } catch { return []; }
       });
       const [recForm, setRecForm] = useState({ customer_id: '', amount: '', note: '', frequency: 'monthly', day: '1' });
       const [savingProduct, setSavingProduct] = useState(false);
@@ -169,11 +171,11 @@ const { useState, useEffect, useCallback } = React;
       const [newCustomer, setNewCustomer] = useState({ name: '', mobile: '', email: '', gstin: '', billing_address: '' });
       const [profileForm, setProfileForm] = useState(null);
       const [savingProfile, setSavingProfile] = useState(false);
-      const [invoiceTemplate, setInvoiceTemplate] = useState(() => localStorage.getItem('si_template') || 'classic');
-      const [invPrefix, setInvPrefix] = useState(() => localStorage.getItem('si_prefix') || 'INV');
-      const [overdueDays, setOverdueDays] = useState(() => Number(localStorage.getItem('si_overdue_days') || 7));
+      const [invoiceTemplate, setInvoiceTemplate] = useState(() => localStorage.getItem('se_template') || 'classic');
+      const [invPrefix, setInvPrefix] = useState(() => localStorage.getItem('se_prefix') || 'EXP');
+      const [overdueDays, setOverdueDays] = useState(() => Number(localStorage.getItem('se_days') || 7));
       const templates = [
-        { id: 'classic', name: 'Classic', color: '#4f46e5', desc: 'Header top · amounts right' },
+        { id: 'classic', name: 'Classic', color: '#e11d48', desc: 'Header top · amounts right' },
         { id: 'sidebar', name: 'Sidebar', color: '#0f172a', desc: 'Left strip · content right' },
         { id: 'card', name: 'Card', color: '#047857', desc: 'Centered card · soft frame' },
         { id: 'table', name: 'GST Table', color: '#1e3a5f', desc: 'Full tax table layout' },
@@ -181,7 +183,7 @@ const { useState, useEffect, useCallback } = React;
       ];
       const templateColor = (templates.find(t => t.id === invoiceTemplate) || templates[0]).color;
       const templateMeta = templates.find(t => t.id === invoiceTemplate) || templates[0];
-      const setTemplate = (id) => { setInvoiceTemplate(id); localStorage.setItem('si_template', id); };
+      const setTemplate = (id) => { setInvoiceTemplate(id); localStorage.setItem('se_template', id); };
 
       const subtotal = items.reduce((s, i) => s + (i.price * i.qty), 0);
       const taxable = Math.max(0, subtotal - discount);
@@ -199,7 +201,7 @@ const { useState, useEffect, useCallback } = React;
         setLoginLoading(true);
         try {
           if (loginCode.toUpperCase() === 'ADMIN' && loginPin === MASTER_PIN) {
-            localStorage.setItem('si_admin', '1');
+            localStorage.setItem('se_admin', '1');
             setIsAdmin(true);
             setShowAdmin(true);
             setLoginLoading(false);
@@ -211,9 +213,9 @@ const { useState, useEffect, useCallback } = React;
           const { data, error } = await supabase.from('businesses').select('*').eq('login_code', code).eq('pin', pin).eq('is_active', true).maybeSingle();
           if (error) throw error;
           if (data) {
-            localStorage.setItem('si_business', JSON.stringify(data));
-            localStorage.removeItem('si_admin');
-            localStorage.removeItem('si_staff');
+            localStorage.setItem('se_business', JSON.stringify(data));
+            localStorage.removeItem('se_admin');
+            localStorage.removeItem('se_staff');
             setBusiness(data);
             setStaffUser(null);
             setIsAdmin(false);
@@ -227,7 +229,7 @@ const { useState, useEffect, useCallback } = React;
             if (st) staffHit = st;
           } catch (e) {}
           if (!staffHit) {
-            const allKeys = Object.keys(localStorage).filter(k => k.startsWith('si_stafflist_'));
+            const allKeys = Object.keys(localStorage).filter(k => k.startsWith('se_stafflist_'));
             for (const k of allKeys) {
               try {
                 const list = JSON.parse(localStorage.getItem(k) || '[]');
@@ -239,9 +241,9 @@ const { useState, useEffect, useCallback } = React;
           if (!staffHit) { setLoginError('Invalid Username or PIN'); setLoginLoading(false); return; }
           const { data: biz, error: bErr } = await supabase.from('businesses').select('*').eq('id', staffHit.business_id).maybeSingle();
           if (bErr || !biz) { setLoginError('Staff business not found'); setLoginLoading(false); return; }
-          localStorage.setItem('si_business', JSON.stringify(biz));
-          localStorage.setItem('si_staff', JSON.stringify(staffHit));
-          localStorage.removeItem('si_admin');
+          localStorage.setItem('se_business', JSON.stringify(biz));
+          localStorage.setItem('se_staff', JSON.stringify(staffHit));
+          localStorage.removeItem('se_admin');
           setBusiness(biz);
           setStaffUser(staffHit);
           setIsAdmin(false);
@@ -253,13 +255,13 @@ const { useState, useEffect, useCallback } = React;
       };
 
       const handleLogout = () => {
-        localStorage.removeItem('si_business');
-        localStorage.removeItem('si_admin');
+        localStorage.removeItem('se_business');
+        localStorage.removeItem('se_admin');
         setBusiness(null);
         setStaffUser(null);
         setIsAdmin(false);
         setShowAdmin(false);
-        localStorage.removeItem('si_staff');
+        localStorage.removeItem('se_staff');
         setCustomers([]); setProducts([]); setInvoices([]);
         setScreen('dashboard');
         setLoginCode(''); setLoginPin('');
@@ -290,19 +292,22 @@ const { useState, useEffect, useCallback } = React;
         if (!business) return;
         setLoading(true); setError(null);
         try {
-          const [custRes, prodRes, invRes] = await Promise.all([
+          const [custRes, prodRes, invRes, expRes] = await Promise.all([
             supabase.from('customers').select('*').eq('business_id', business.id).order('name'),
             supabase.from('products').select('*').eq('business_id', business.id).order('name'),
-            supabase.from('invoices').select('*').eq('business_id', business.id).order('created_at', { ascending: false }).limit(50)
+            supabase.from('invoices').select('id,total,status,invoice_date,created_at').eq('business_id', business.id).order('created_at', { ascending: false }).limit(200),
+            supabase.from('expenses').select('*').eq('business_id', business.id).order('expense_date', { ascending: false }).limit(100)
           ]);
           if (custRes.error) console.warn(custRes.error);
           if (prodRes.error) console.warn(prodRes.error);
           if (invRes.error) console.warn(invRes.error);
+          if (expRes.error) console.warn(expRes.error);
           setCustomers(custRes.data || []);
           setProducts(prodRes.data || []);
           setInvoices(invRes.data || []);
-          if (custRes.error && prodRes.error && invRes.error) {
-            throw new Error((custRes.error || prodRes.error || invRes.error).message || 'Tables missing. Run PIN schema in Supabase SQL Editor.');
+          setExpenses(expRes.data || []);
+          if (expRes.error && !expRes.data) {
+            console.warn('Expenses table missing? Run supabase-expenses-schema.sql');
           }
         } catch (err) {
           setError(err.message || 'Failed to load data');
@@ -315,13 +320,13 @@ const { useState, useEffect, useCallback } = React;
       useEffect(() => {
         if (!business?.id) return;
         try {
-          const raw = localStorage.getItem('si_recurring_' + business.id);
+          const raw = localStorage.getItem('se_recurring_' + business.id);
           setRecurringList(raw ? JSON.parse(raw) : []);
         } catch { setRecurringList([]); }
       }, [business?.id]);
       const saveRecurringList = (list) => {
         setRecurringList(list);
-        if (business?.id) localStorage.setItem('si_recurring_' + business.id, JSON.stringify(list));
+        if (business?.id) localStorage.setItem('se_recurring_' + business.id, JSON.stringify(list));
       };
 
       useEffect(() => {
@@ -329,7 +334,7 @@ const { useState, useEffect, useCallback } = React;
         const el = document.getElementById('preview-barcode');
         if (!el || typeof JsBarcode === 'undefined') return;
         try {
-          JsBarcode(el, String(lastInvoice.invoice_number || 'INV'), {
+          JsBarcode(el, String(lastInvoice.invoice_number || 'EXP'), {
             format: 'CODE128', width: 1.6, height: 48, displayValue: true, fontSize: 12, margin: 8, background: '#ffffff'
           });
         } catch (e) {}
@@ -337,7 +342,7 @@ const { useState, useEffect, useCallback } = React;
 
 
       const nextInvoiceNumber = () => {
-        const prefix = invPrefix || 'INV';
+        const prefix = invPrefix || 'EXP';
         const nums = invoices
           .map(i => {
             const m = String(i.invoice_number || '').match(/(\d+)$/);
@@ -405,14 +410,14 @@ const { useState, useEffect, useCallback } = React;
       const loadStaffList = () => {
         if (!business?.id) return;
         try {
-          const raw = localStorage.getItem('si_stafflist_' + business.id);
+          const raw = localStorage.getItem('se_stafflist_' + business.id);
           setStaffList(raw ? JSON.parse(raw) : []);
         } catch { setStaffList([]); }
       };
 
       const saveStaffList = (list) => {
         setStaffList(list);
-        if (business?.id) localStorage.setItem('si_stafflist_' + business.id, JSON.stringify(list));
+        if (business?.id) localStorage.setItem('se_stafflist_' + business.id, JSON.stringify(list));
       };
 
       const addStaffMember = async () => {
@@ -568,10 +573,10 @@ const { useState, useEffect, useCallback } = React;
             <div className="flex-1 flex flex-col justify-center px-6 py-12">
               <div className="text-center mb-8">
                 <div className="w-16 h-16 bg-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-brand-600/30">
-                  <span className="text-white text-2xl font-bold">SI</span>
+                  <span className="text-white text-2xl font-bold">SE</span>
                 </div>
-                <h1 className="text-2xl font-bold text-slate-900">Smart Invoice</h1>
-                <p className="text-slate-500 text-sm mt-1">Create. Send. Get Paid.</p>
+                <h1 className="text-2xl font-bold text-slate-900">Smart Expense</h1>
+                <p className="text-slate-500 text-sm mt-1">Track. Spend. Profit.</p>
               </div>
               <div className="bg-white rounded-2xl shadow-card p-6">
                 <form onSubmit={handleLogin} className="space-y-4">
@@ -808,6 +813,46 @@ const { useState, useEffect, useCallback } = React;
 
 
 
+
+      const EXPENSE_CATEGORIES = ['Rent', 'Salary', 'Material', 'Transport', 'Food', 'Utilities', 'Marketing', 'Maintenance', 'Tax', 'Other'];
+
+      const saveExpense = async () => {
+        if (!business) return;
+        const amt = Number(expForm.amount);
+        if (!amt || amt <= 0) { alert('Enter valid amount'); return; }
+        setSaving(true);
+        try {
+          const row = {
+            business_id: business.id,
+            expense_date: expForm.expense_date || new Date().toISOString().split('T')[0],
+            category: expForm.category || 'Other',
+            amount: amt,
+            payment_mode: expForm.payment_mode || 'cash',
+            note: expForm.note || null
+          };
+          const { error } = await supabase.from('expenses').insert(row);
+          if (error) throw error;
+          setExpForm({ expense_date: new Date().toISOString().split('T')[0], category: 'Other', amount: '', payment_mode: 'cash', note: '' });
+          await loadData();
+          setScreen('dashboard');
+        } catch (err) {
+          alert('Error: ' + (err.message || err) + '\\n\\nRun expenses SQL in Supabase if table missing.');
+        } finally {
+          setSaving(false);
+        }
+      };
+
+      const deleteExpense = async (id) => {
+        if (!confirm('Delete this expense?')) return;
+        try {
+          const { error } = await supabase.from('expenses').delete().eq('id', id);
+          if (error) throw error;
+          await loadData();
+        } catch (err) {
+          alert('Error: ' + (err.message || err));
+        }
+      };
+
       const generateReceiptFromInvoice = async (inv) => {
         if (!inv || !business) return;
         if (!confirm('Generate receipt for ' + (inv.invoice_number || '') + '?')) return;
@@ -819,7 +864,7 @@ const { useState, useEffect, useCallback } = React;
           items = invItems || [];
 
           // next receipt number
-          const prefix = (localStorage.getItem('sr_prefix') || 'REC').toUpperCase();
+          const prefix = (localStorage.getItem('se_prefix') || 'REC').toUpperCase();
           const { data: existing } = await supabase.from('receipts').select('receipt_number').eq('business_id', business.id).order('created_at', { ascending: false }).limit(50);
           let maxN = 0;
           (existing || []).forEach(r => {
@@ -861,7 +906,7 @@ const { useState, useEffect, useCallback } = React;
             if (riErr) throw riErr;
           }
 
-          const go = confirm('✅ Receipt ' + receiptNumber + ' created!\n\nOpen Smart Receipt now?');
+          const go = confirm('✅ Receipt ' + receiptNumber + ' created!\n\nOpen Smart Expense now?');
           if (go) window.location.href = 'receipt.html';
         } catch (err) {
           alert('Receipt error: ' + (err.message || err) + '\n\nMake sure receipts tables SQL is run in Supabase.');
@@ -872,7 +917,7 @@ const { useState, useEffect, useCallback } = React;
         if (!inv) return;
         const phone = (inv.customer_mobile || '').replace(/\D/g, '');
         const amt = Number(inv.balance || inv.total || 0).toLocaleString('en-IN');
-        const biz = business?.name || 'Smart Invoice';
+        const biz = business?.name || 'Smart Expense';
         const upi = business?.upi_id ? '\n💳 Pay UPI: ' + business.upi_id : '';
         const msg = 'Hello ' + (inv.customer_name || 'Customer') + ' 👋\n\nFriendly reminder from *' + biz + '*.\n\nYour invoice *' + inv.invoice_number + '* of *₹' + amt + '* is still *pending*.\n\nPlease pay at the earliest.' + upi + '\n\nThank you!\n— ' + biz;
         const url = phone
@@ -944,7 +989,7 @@ const { useState, useEffect, useCallback } = React;
         const phone = (inv.customer_mobile || '').replace(/\D/g, '');
         const amt = Number(inv.total || 0).toLocaleString('en-IN');
         const st = (inv.status || 'pending').toUpperCase();
-        const biz = business?.name || 'Smart Invoice';
+        const biz = business?.name || 'Smart Expense';
         const upi = business?.upi_id ? '\n💳 Pay UPI: ' + business.upi_id + '\n🔗 Open UPI app to pay ₹' + amt : '';
         const msg = 'Hello ' + (inv.customer_name || 'Customer') + ' 👋\n\nYour invoice *' + inv.invoice_number + '* from *' + biz + '* is ready.\n\n💰 Amount: ₹' + amt + '\n📋 Status: ' + st + upi + '\n\nThank you for your business!\n— ' + biz;
         const url = phone
@@ -985,7 +1030,7 @@ const { useState, useEffect, useCallback } = React;
         const color = templateColor;
         const layout = (templateMeta && templateMeta.id) || 'classic';
         const logo = business?.logo_url || '';
-        const invNo = String(inv.invoice_number || 'INV');
+        const invNo = String(inv.invoice_number || 'EXP');
         const bName = business?.name || 'Invoice';
         const bAddr = business?.address || '';
         const bPhone = business?.phone || '';
@@ -1156,285 +1201,151 @@ const { useState, useEffect, useCallback } = React;
       })();
 
       const Dashboard = () => {
-        const last7 = [];
-        for (let d = 6; d >= 0; d--) {
-          const dt = new Date(); dt.setDate(dt.getDate() - d);
-          const key = dt.toISOString().split('T')[0];
-          const sum = invoices.filter(i => i.invoice_date === key).reduce((s, i) => s + Number(i.total || 0), 0);
-          last7.push({ key, label: dt.toLocaleDateString('en-IN', { weekday: 'short' }), sum });
-        }
-        const maxBar = Math.max(...last7.map(x => x.sum), 1);
+        const now = new Date();
+        const ym = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        const monthSales = invoices.filter(i => {
+          const d = i.invoice_date || '';
+          return d.startsWith(ym) && (i.status === 'paid' || true);
+        }).reduce((s, i) => s + Number(i.total || 0), 0);
+        const monthPaidSales = invoices.filter(i => {
+          const d = i.invoice_date || '';
+          return d.startsWith(ym) && i.status === 'paid';
+        }).reduce((s, i) => s + Number(i.total || 0), 0);
+        const monthExpenses = expenses.filter(e => (e.expense_date || '').startsWith(ym)).reduce((s, e) => s + Number(e.amount || 0), 0);
+        const profit = monthPaidSales - monthExpenses;
+        const byCat = {};
+        expenses.filter(e => (e.expense_date || '').startsWith(ym)).forEach(e => {
+          const c = e.category || 'Other';
+          byCat[c] = (byCat[c] || 0) + Number(e.amount || 0);
+        });
+        const catList = Object.entries(byCat).sort((a,b) => b[1] - a[1]);
         return (
         <div className="pb-24 min-h-screen">
           <div className="bg-white px-5 pt-12 pb-5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-slate-500 text-sm font-medium">{greeting} 👋</p>
-                <h1 className="text-xl font-bold text-slate-900 mt-0.5">{business?.name || 'Smart Invoice'}</h1>
-                <p className="text-xs text-slate-400 mt-0.5">Here's your business overview</p>
+                <h1 className="text-xl font-bold text-slate-900 mt-0.5">{business?.name || 'Smart Expense'}</h1>
+                <p className="text-xs text-slate-400 mt-0.5">Sales − Expenses = Profit</p>
               </div>
-              {business?.logo_url ? (
-                <img src={business.logo_url} alt="" className="w-11 h-11 rounded-full object-cover border border-slate-100" />
-              ) : (
-                <div className="w-11 h-11 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm">
-                  {(business?.name || 'SI').substring(0, 2).toUpperCase()}
-                </div>
-              )}
+              <div className="w-11 h-11 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm">
+                {(business?.name || 'SE').substring(0, 2).toUpperCase()}
+              </div>
             </div>
           </div>
           <div className="px-5 mt-2 mb-4">
-            <button onClick={startNewInvoice} className="w-full bg-brand-600 text-white font-semibold py-3.5 rounded-2xl shadow-soft shadow-brand-600/25 flex items-center justify-center gap-2">
-              <IconPlus /> Create Invoice
+            <button onClick={() => setScreen('create')} className="w-full bg-brand-600 text-white font-semibold py-3.5 rounded-2xl shadow-soft flex items-center justify-center gap-2">
+              <IconPlus /> Add Expense
             </button>
-            <button onClick={() => { setSelectedCustomer(null); setItems([]); setDiscount(0); setIsInterstate(false); setScreen('pos'); }} className="w-full mt-2.5 bg-white border border-slate-200 text-slate-800 font-semibold py-3 rounded-2xl flex items-center justify-center gap-2">
-              ⚡ Quick POS
-            </button>
+          </div>
+          <div className="px-5 mb-4">
+            <div className={'rounded-2xl p-5 text-white shadow-soft ' + (profit >= 0 ? 'bg-gradient-to-br from-emerald-600 to-emerald-800' : 'bg-gradient-to-br from-rose-600 to-rose-800')}>
+              <p className="text-white/80 text-xs font-medium mb-1">This month profit</p>
+              <p className="text-3xl font-bold">{formatINR(profit)}</p>
+              <p className="text-white/70 text-xs mt-2">Sales (paid) {formatINR(monthPaidSales)} − Expenses {formatINR(monthExpenses)}</p>
+            </div>
           </div>
           <div className="px-5 grid grid-cols-2 gap-3 mb-4">
             <div className="bg-white rounded-2xl p-4 shadow-card">
-              <p className="text-slate-500 text-[11px] font-medium mb-1">Today's Sales</p>
-              <p className="text-xl font-bold text-slate-900">{formatINR(todaySales)}</p>
+              <p className="text-slate-500 text-[11px] font-medium mb-1">Month sales (paid)</p>
+              <p className="text-xl font-bold text-emerald-600">{formatINR(monthPaidSales)}</p>
             </div>
             <div className="bg-white rounded-2xl p-4 shadow-card">
-              <p className="text-slate-500 text-[11px] font-medium mb-1">Pending</p>
-              <p className="text-xl font-bold text-amber-600">{formatINR(pendingAmount)}</p>
-            </div>
-            <div className="bg-white rounded-2xl p-4 shadow-card">
-              <p className="text-slate-500 text-[11px] font-medium mb-1">Invoices</p>
-              <p className="text-xl font-bold text-slate-900">{invoices.length}</p>
-            </div>
-            <div className="bg-white rounded-2xl p-4 shadow-card">
-              <p className="text-slate-500 text-[11px] font-medium mb-1">Customers</p>
-              <p className="text-xl font-bold text-slate-900">{customers.length}</p>
+              <p className="text-slate-500 text-[11px] font-medium mb-1">Month expenses</p>
+              <p className="text-xl font-bold text-rose-600">{formatINR(monthExpenses)}</p>
             </div>
           </div>
-          <div className="px-5 mb-4">
-            <div className="bg-white rounded-2xl p-4 shadow-card">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-semibold text-slate-900">Sales · 7 days</p>
-                <p className="text-xs text-slate-400">{formatINR(last7.reduce((s,x)=>s+x.sum,0))}</p>
-              </div>
-              <div className="flex items-end gap-1.5 h-20">
-                {last7.map((d) => (
-                  <div key={d.key} className="flex-1 flex flex-col items-center gap-1">
-                    <div className="w-full rounded-t-md bg-brand-500/90 min-h-[4px]" style={{ height: Math.max(4, (d.sum / maxBar) * 64) + 'px' }}></div>
-                    <span className="text-[9px] text-slate-400">{d.label}</span>
-                  </div>
-                ))}
+          {catList.length > 0 && (
+            <div className="px-5 mb-4">
+              <div className="bg-white rounded-2xl p-4 shadow-card">
+                <p className="text-sm font-semibold text-slate-900 mb-3">By category · this month</p>
+                <div className="space-y-2">
+                  {catList.map(([c, a]) => (
+                    <div key={c} className="flex justify-between text-sm">
+                      <span className="text-slate-600">{c}</span>
+                      <span className="font-semibold text-slate-900">{formatINR(a)}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-          <div className="px-5 mb-4">
-            <div className="bg-gradient-to-br from-brand-600 to-brand-800 rounded-2xl p-5 text-white shadow-soft">
-              <p className="text-brand-100 text-xs font-medium mb-1">All-time revenue</p>
-              <p className="text-3xl font-bold">{formatINR(totalRevenue)}</p>
-              <p className="text-brand-200 text-xs mt-2">{invoices.filter(i=>i.status==='paid').length} paid · {invoices.filter(i=>i.status!=='paid').length} outstanding</p>
-            </div>
-          </div>
+          )}
           <div className="px-5">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-semibold text-slate-900">Recent Invoices</h2>
+              <h2 className="font-semibold text-slate-900">Recent expenses</h2>
               <button onClick={loadData} className="text-brand-600 text-sm font-medium flex items-center gap-1"><IconRefresh /> Refresh</button>
             </div>
             <div className="space-y-3">
-              {invoices.length === 0 ? (
+              {expenses.length === 0 ? (
                 <div className="bg-white rounded-2xl p-8 text-center text-slate-400 shadow-card">
-                  <p>No invoices yet</p>
-                  <button onClick={startNewInvoice} className="mt-2 text-brand-600 font-medium text-sm">+ Create first invoice</button>
+                  <p>No expenses yet</p>
+                  <button onClick={() => setScreen('create')} className="mt-2 text-brand-600 font-medium text-sm">+ Add first expense</button>
                 </div>
-              ) : invoices.slice(0, 10).map((inv) => (
-                <div key={inv.id} className="bg-white rounded-2xl p-4 shadow-card">
-                  <div className="flex items-center gap-3" onClick={() => { setLastInvoice(inv); setScreen('preview'); }}>
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 font-semibold text-sm">{(inv.customer_name || '?').charAt(0)}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-slate-900 truncate">{inv.customer_name}</p>
-                      <p className="text-xs text-slate-400">{inv.invoice_number} · {inv.invoice_date}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-slate-900">{formatINR(inv.total)}</p>
-                      <span className={'text-[10px] font-semibold px-2 py-0.5 rounded-full ' + statusStyle(getInvoiceStatus(inv))}>
-                        {statusLabel(getInvoiceStatus(inv))}
-                      </span>
-                    </div>
+              ) : expenses.slice(0, 20).map((ex) => (
+                <div key={ex.id} className="bg-white rounded-2xl p-4 shadow-card flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600 font-semibold text-xs">{(ex.category || 'O').charAt(0)}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-slate-900">{ex.category}</p>
+                    <p className="text-xs text-slate-400">{ex.expense_date} · {ex.payment_mode}{ex.note ? ' · ' + ex.note : ''}</p>
                   </div>
-                  {inv.status !== 'paid' && (
-                    <div className="mt-2 flex gap-2">
-                      <button onClick={(e) => { e.stopPropagation(); sendPaymentReminder(inv); }} className="flex-1 text-xs font-semibold text-amber-700 bg-amber-50 py-2 rounded-xl">Remind</button>
-                      {inv.status !== 'paid' && <button onClick={(e) => { e.stopPropagation(); markAsPaid(inv); }} className="flex-1 text-xs font-semibold text-emerald-700 bg-emerald-50 py-2 rounded-xl">Mark Paid</button>}
-                      {inv.status === 'paid' && <button onClick={(e) => { e.stopPropagation(); generateReceiptFromInvoice(inv); }} className="flex-1 text-xs font-semibold text-amber-800 bg-amber-50 py-2 rounded-xl">Receipt</button>}
-                    </div>
-                  )}
+                  <div className="text-right">
+                    <p className="font-semibold text-rose-600">{formatINR(ex.amount)}</p>
+                    <button onClick={() => deleteExpense(ex.id)} className="text-[10px] text-slate-400 font-medium">Delete</button>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
-      );
+        );
       };
 
       const CreateInvoice = () => (
         <div className="pb-28 min-h-screen bg-slate-50">
-          <div className="bg-white px-4 pt-12 pb-4 sticky top-0 z-20 border-b border-slate-100">
-            <div className="flex items-center gap-3">
-              <button onClick={() => setScreen('dashboard')} className="p-1 -ml-1 text-slate-600"><IconBack /></button>
-              <h1 className="text-lg font-bold text-slate-900 flex-1">Create Invoice</h1>
+          <div className="bg-white px-4 pt-12 pb-4 sticky top-0 z-20 border-b border-slate-100 flex items-center gap-3">
+            <button onClick={() => setScreen('dashboard')} className="p-1"><IconBack /></button>
+            <h1 className="text-lg font-bold text-slate-900 flex-1">Add Expense</h1>
+          </div>
+          <div className="p-4 space-y-3">
+            <div className="bg-white rounded-2xl p-4 shadow-card space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-slate-500">Date</label>
+                <input type="date" value={expForm.expense_date} onChange={e => setExpForm({...expForm, expense_date: e.target.value})}
+                  className="w-full mt-1 px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-500">Category</label>
+                <select value={expForm.category} onChange={e => setExpForm({...expForm, category: e.target.value})}
+                  className="w-full mt-1 px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none">
+                  {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-500">Amount (₹)</label>
+                <input type="number" inputMode="decimal" placeholder="0" value={expForm.amount}
+                  onChange={e => setExpForm({...expForm, amount: e.target.value})}
+                  className="w-full mt-1 px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none font-semibold" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-500">Payment mode</label>
+                <div className="flex gap-2 mt-1 flex-wrap">
+                  {['cash','upi','card','bank'].map(m => (
+                    <button key={m} type="button" onClick={() => setExpForm({...expForm, payment_mode: m})}
+                      className={'px-3 py-1.5 rounded-full text-xs font-semibold capitalize ' + (expForm.payment_mode === m ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-600')}>{m}</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-500">Note (optional)</label>
+                <input placeholder="e.g. Shop rent March" value={expForm.note}
+                  onChange={e => setExpForm({...expForm, note: e.target.value})}
+                  className="w-full mt-1 px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none" />
+              </div>
+              <button onClick={saveExpense} disabled={saving} className="w-full bg-brand-600 text-white font-semibold py-3.5 rounded-2xl disabled:opacity-60">
+                {saving ? 'Saving...' : 'Save Expense'}
+              </button>
             </div>
           </div>
-          <div className="px-4 pt-4 space-y-4">
-            <div className="bg-white rounded-2xl p-4 shadow-card">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Customer</p>
-              {selectedCustomer ? (
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-brand-100 flex items-center justify-center text-brand-700 font-bold">{selectedCustomer.name.charAt(0)}</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-slate-900">{selectedCustomer.name}</p>
-                    <p className="text-sm text-slate-500">{selectedCustomer.mobile}</p>
-                  </div>
-                  <button onClick={() => { setSelectedCustomer(null); setShowCustomerPicker(true); }} className="text-brand-600 text-sm font-medium">Change</button>
-                </div>
-              ) : (
-                <button onClick={() => setShowCustomerPicker(true)} className="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-slate-200 text-slate-500">
-                  <IconSearch /><span className="font-medium">Search customer...</span>
-                </button>
-              )}
-            </div>
-            <div className="bg-white rounded-2xl p-4 shadow-card">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Items</p>
-                <button onClick={() => setShowProductPicker(true)} className="text-brand-600 text-sm font-semibold flex items-center gap-1"><IconPlus /> Add Item</button>
-              </div>
-              {items.length === 0 ? (
-                <div className="py-8 text-center text-slate-400">
-                  <p className="text-sm">No items yet</p>
-                  <button onClick={() => setShowProductPicker(true)} className="mt-2 text-brand-600 font-medium text-sm">+ Add item</button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {items.map((item) => (
-                    <div key={item.product_id} className="flex items-start gap-3 py-2 border-b border-slate-50 last:border-0">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-slate-900 text-sm">{item.name}</p>
-                        <p className="text-xs text-slate-400">GST {item.gst}%</p>
-                        <p className="text-sm font-semibold text-slate-700 mt-1">{formatINRFull(item.price)} × {item.qty}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => updateQty(item.product_id, item.qty - 1)} className="w-8 h-8 rounded-lg bg-slate-100 font-bold flex items-center justify-center">−</button>
-                        <span className="w-6 text-center font-semibold text-sm">{item.qty}</span>
-                        <button onClick={() => updateQty(item.product_id, item.qty + 1)} className="w-8 h-8 rounded-lg bg-slate-100 font-bold flex items-center justify-center">+</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            {items.length > 0 && (
-              <>
-                <div className="bg-white rounded-2xl p-4 shadow-card">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-slate-700">Discount</p>
-                    <div className="flex items-center gap-1">
-                      <span className="text-slate-400">₹</span>
-                      <input type="number" value={discount || ''} onChange={(e) => setDiscount(Number(e.target.value) || 0)} placeholder="0" className="w-24 text-right font-semibold border-b border-slate-200 outline-none py-1" />
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white rounded-2xl p-4 shadow-card">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium text-slate-700">Tax type</p>
-                    <button type="button" onClick={() => setIsInterstate(!isInterstate)}
-                      className={'text-xs font-semibold px-3 py-1.5 rounded-full ' + (isInterstate ? 'bg-amber-100 text-amber-800' : 'bg-brand-50 text-brand-700')}>
-                      {isInterstate ? 'Inter-state · IGST' : 'Intra-state · CGST+SGST'}
-                    </button>
-                  </div>
-                  <div className="space-y-2.5">
-                    <div className="flex justify-between text-sm"><span className="text-slate-500">Subtotal</span><span>{formatINRFull(subtotal)}</span></div>
-                    {discount > 0 && <div className="flex justify-between text-sm"><span className="text-slate-500">Discount</span><span className="text-rose-600">−{formatINRFull(discount)}</span></div>}
-                    <div className="flex justify-between text-sm"><span className="text-slate-500">Taxable</span><span>{formatINRFull(taxable)}</span></div>
-                    {!isInterstate && <div className="flex justify-between text-sm"><span className="text-slate-500">CGST</span><span>{formatINRFull(cgst)}</span></div>}
-                    {!isInterstate && <div className="flex justify-between text-sm"><span className="text-slate-500">SGST</span><span>{formatINRFull(sgst)}</span></div>}
-                    {isInterstate && <div className="flex justify-between text-sm"><span className="text-slate-500">IGST</span><span>{formatINRFull(igst)}</span></div>}
-                    <div className="border-t border-slate-100 pt-3 flex justify-between items-center">
-                      <span className="font-bold">Grand Total</span>
-                      <span className="text-xl font-bold text-brand-600">{formatINRFull(total)}</span>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-          {items.length > 0 && selectedCustomer && (
-            <div className="fixed bottom-20 left-0 right-0 px-4 z-30">
-              <div className="max-w-md mx-auto">
-                <button onClick={saveInvoice} disabled={saving} className="w-full bg-brand-600 text-white font-semibold py-3.5 rounded-2xl shadow-soft disabled:opacity-60">
-                  {saving ? 'Saving...' : 'Save Invoice'}
-                </button>
-              </div>
-            </div>
-          )}
-          {showCustomerPicker && (
-            <div className="fixed inset-0 bg-black/40 z-50 flex items-end">
-              <div className="bg-white w-full max-h-[80vh] rounded-t-3xl overflow-hidden">
-                <div className="p-4 border-b border-slate-100">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-bold text-lg">Select Customer</h3>
-                    <button onClick={() => setShowCustomerPicker(false)} className="text-slate-400 font-medium">Close</button>
-                  </div>
-                  <div className="relative mb-3">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2"><IconSearch /></div>
-                    <input autoFocus value={customerSearch} onChange={(e) => setCustomerSearch(e.target.value)} placeholder="Search..." className="w-full pl-10 pr-4 py-3 bg-slate-50 rounded-xl text-sm outline-none" />
-                  </div>
-                  <button onClick={() => setShowAddCustomer(true)} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-brand-300 text-brand-600 font-semibold text-sm">
-                    <IconPlus /> Add New Customer
-                  </button>
-                </div>
-                <div className="overflow-y-auto max-h-[50vh] p-2">
-                  {filteredCustomers.map((c) => (
-                    <button key={c.id} onClick={() => { setSelectedCustomer(c); setShowCustomerPicker(false); setCustomerSearch(''); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 text-left">
-                      <div className="w-11 h-11 rounded-xl bg-brand-50 flex items-center justify-center text-brand-700 font-bold">{c.name.charAt(0)}</div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-slate-900">{c.name}</p>
-                        <p className="text-sm text-slate-500">{c.mobile}</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-          {showProductPicker && (
-            <div className="fixed inset-0 bg-black/40 z-50 flex items-end">
-              <div className="bg-white w-full max-h-[80vh] rounded-t-3xl overflow-hidden">
-                <div className="p-4 border-b border-slate-100">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-bold text-lg">Add Item</h3>
-                    <button onClick={() => setShowProductPicker(false)} className="text-slate-400 font-medium">Close</button>
-                  </div>
-                  <div className="relative mb-3">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2"><IconSearch /></div>
-                    <input autoFocus value={productSearch} onChange={(e) => setProductSearch(e.target.value)} placeholder="Search..." className="w-full pl-10 pr-4 py-3 bg-slate-50 rounded-xl text-sm outline-none" />
-                  </div>
-                  <button onClick={() => setShowAddProduct(true)} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-brand-300 text-brand-600 font-semibold text-sm">
-                    <IconPlus /> Add New Item
-                  </button>
-                </div>
-                <div className="overflow-y-auto max-h-[50vh] p-2">
-                  {filteredProducts.map((p) => (
-                    <button key={p.id} onClick={() => addItem(p)} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 text-left">
-                      <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 font-semibold text-xs">{(p.sku || 'ITM').slice(0, 3)}</div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-slate-900 text-sm">{p.name}</p>
-                        <p className="text-xs text-slate-400">{p.sku}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-slate-900">{formatINR(p.price)}</p>
-                        <p className="text-xs text-slate-400">{p.gst_percent}%</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       );
 
@@ -1824,7 +1735,7 @@ const { useState, useEffect, useCallback } = React;
             updated_at: new Date().toISOString()
           }).eq('id', business.id).select().single();
           if (error) throw error;
-          localStorage.setItem('si_business', JSON.stringify(data));
+          localStorage.setItem('se_business', JSON.stringify(data));
           setBusiness(data);
           alert('Profile saved!');
           setScreen('more');
@@ -2201,7 +2112,7 @@ const { useState, useEffect, useCallback } = React;
               <div>
                 <label className="text-xs text-slate-500">Prefix</label>
                 <input value={invPrefix} onChange={e => setInvPrefix(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8))}
-                  placeholder="INV" className="w-full mt-1 px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none font-semibold" />
+                  placeholder="EXP" className="w-full mt-1 px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none font-semibold" />
                 <p className="text-[10px] text-slate-400 mt-1">Next: {nextInvoiceNumber()}</p>
               </div>
               <div>
@@ -2211,8 +2122,8 @@ const { useState, useEffect, useCallback } = React;
                   className="w-full mt-1 px-3 py-2.5 bg-slate-50 rounded-xl text-sm outline-none" />
               </div>
               <button onClick={() => {
-                localStorage.setItem('si_prefix', invPrefix || 'INV');
-                localStorage.setItem('si_overdue_days', String(overdueDays || 7));
+                localStorage.setItem('se_prefix', invPrefix || 'EXP');
+                localStorage.setItem('se_days', String(overdueDays || 7));
                 alert('Settings saved');
               }} className="w-full bg-brand-600 text-white font-semibold py-3 rounded-xl text-sm">Save Settings</button>
             </div>
@@ -2310,17 +2221,32 @@ const { useState, useEffect, useCallback } = React;
             <a href="receipt.html" className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
               <div className="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 font-bold text-sm">SR</div>
               <div className="flex-1">
-                <p className="font-semibold text-slate-900">Smart Receipt</p>
+                <p className="font-semibold text-slate-900">Smart Expense</p>
                 <p className="text-sm text-slate-500">Switch to receipt app</p>
               </div>
               <span className="text-slate-400">→</span>
             </a>
-
-            <a href="expense.html" className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
-              <div className="w-11 h-11 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600 font-bold text-sm">SE</div>
+            <a href="invoice.html" className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
+              <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-sm">SI</div>
               <div className="flex-1">
-                <p className="font-semibold text-slate-900">Smart Expense</p>
-                <p className="text-sm text-slate-500">Expenses & profit</p>
+                <p className="font-semibold text-slate-900">Smart Invoice</p>
+                <p className="text-sm text-slate-500">Sales & billing</p>
+              </div>
+              <span className="text-slate-400">→</span>
+            </a>
+            <a href="quotation.html" className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
+              <div className="w-11 h-11 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600 font-bold text-sm">SQ</div>
+              <div className="flex-1">
+                <p className="font-semibold text-slate-900">Smart Quotation</p>
+                <p className="text-sm text-slate-500">Quotes & follow-up</p>
+              </div>
+              <span className="text-slate-400">→</span>
+            </a>
+            <a href="receipt.html" className="w-full bg-white rounded-2xl p-4 shadow-card flex items-center gap-3 text-left">
+              <div className="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 font-bold text-sm">SR</div>
+              <div className="flex-1">
+                <p className="font-semibold text-slate-900">Smart Receipt</p>
+                <p className="text-sm text-slate-500">Payment receipts</p>
               </div>
               <span className="text-slate-400">→</span>
             </a>
